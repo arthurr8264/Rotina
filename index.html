@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D141B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rotina">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>Rotina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0D141B; --panel:#141F2A; --panel-2:#1B2936; --edge:#243543;
+  --line1:#2BB3C0; --line2:#E8A33D; --signal:#E2574C;
+  --chalk:#E6EDF2; --dim:#7A8B99; --dimmer:#4E5F6D;
+  --display:"Barlow Condensed","Oswald","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --pad:18px; --nav-h:62px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink);color:var(--chalk);font-family:var(--body);
+  font-size:15px;line-height:1.55;
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+
+.masthead{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,var(--ink) 72%,rgba(13,20,27,0));padding:calc(env(safe-area-inset-top) + 14px) var(--pad) 14px}
+.masthead-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.today-name{font-family:var(--display);font-size:34px;font-weight:700;letter-spacing:.055em;text-transform:uppercase;line-height:1;margin:0}
+.clock{font-family:var(--display);font-size:30px;font-weight:500;line-height:1;color:var(--line1);font-variant-numeric:tabular-nums}
+.today-sub{font-family:var(--display);font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-top:7px}
+.today-sub .badge{color:var(--line2)}
+.today-sub .badge.rest{color:var(--dimmer)}
+
+.view{display:none;padding:4px var(--pad) 32px;animation:rise .3s ease}
+.view.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+h2.sec{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin:30px 0 12px;display:flex;align-items:center;gap:10px}
+h2.sec::after{content:"";flex:1;height:1px;background:var(--edge)}
+h2.sec:first-child{margin-top:14px}
+h3.sub{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk);margin:26px 0 10px}
+
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:13px;padding:16px;margin-bottom:12px}
+.note{border-left:3px solid var(--line2);background:var(--panel);border-radius:0 10px 10px 0;padding:13px 15px;font-size:14px;color:#CBD7E0;margin:12px 0}
+.note strong{color:var(--chalk)}
+.note.alert{border-left-color:var(--signal)}
+.note.quiet{border-left-color:var(--dimmer);color:var(--dim);font-size:13px}
+.note.info{border-left-color:var(--line1)}
+
+/* rota */
+.route{position:relative;margin:6px 0 0}
+.stop{position:relative;display:grid;grid-template-columns:58px 26px 1fr;align-items:start;gap:0 12px;padding:9px 0}
+.stop::before{content:"";position:absolute;left:82px;top:0;bottom:0;width:2px;background:var(--edge)}
+.stop:first-child::before{top:22px}
+.stop:last-child::before{bottom:calc(100% - 22px)}
+.stop .t{font-family:var(--display);font-size:20px;font-weight:600;line-height:1.25;color:var(--dim);font-variant-numeric:tabular-nums;text-align:right;padding-top:1px}
+.stop .dot{position:relative;z-index:2;width:12px;height:12px;border-radius:50%;background:var(--ink);border:2px solid var(--dimmer);margin:7px auto 0}
+.stop .lbl{font-size:15px;color:#B9C7D2;padding-top:1px}
+.stop .lbl small{display:block;font-size:12.5px;color:var(--dim);margin-top:1px}
+.stop.done .t,.stop.done .lbl,.stop.done .lbl small{color:var(--dimmer)}
+.stop.key .dot{border-color:var(--line1);background:var(--line1);width:14px;height:14px;margin-top:6px}
+.stop.key .t{color:var(--line1)}
+.stop.key .lbl{color:var(--chalk);font-weight:600}
+.stop.gym .dot{border-color:var(--line2);background:var(--line2);width:16px;height:16px;margin-top:5px}
+.stop.gym .t{color:var(--line2);font-size:23px}
+.stop.gym .lbl{color:var(--line2);font-weight:600;font-family:var(--display);font-size:21px;letter-spacing:.09em;text-transform:uppercase}
+.stop.gym .lbl small{font-family:var(--body);letter-spacing:0;text-transform:none;font-size:12.5px;color:var(--dim);font-weight:400}
+.stop.now .dot{border-color:var(--signal);background:var(--signal);box-shadow:0 0 0 5px rgba(226,87,76,.18)}
+.stop.now .t{color:var(--signal)}
+.stop.now .lbl{color:#fff}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0 10px 8px 0;border-bottom:1px solid var(--edge)}
+td{padding:10px 10px 10px 0;border-bottom:1px solid rgba(36,53,67,.55);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:last-child,th:last-child{padding-right:0;text-align:right}
+.num{font-family:var(--display);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--line1);white-space:nowrap}
+.muted{color:var(--dim)}
+
+.week{display:flex;flex-direction:column;gap:8px}
+.day{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--edge);border-left:3px solid var(--edge);border-radius:10px;padding:13px 15px}
+.day.train{border-left-color:var(--line2)}
+.day.here{border-color:var(--line1);border-left-color:var(--line1);background:var(--panel-2)}
+.day .abbr{font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+.day.train .abbr{color:var(--chalk)}
+.day.here .abbr{color:var(--line1)}
+.day .what{font-size:14.5px;font-weight:500}
+.day .what small{display:block;font-size:12.5px;color:var(--dim);font-weight:400;margin-top:1px}
+.day .hour{font-family:var(--display);font-size:20px;font-weight:600;color:var(--line2);font-variant-numeric:tabular-nums}
+.day.rest .what,.day.rest .hour{color:var(--dimmer)}
+
+.macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.macro{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:12px 8px;text-align:center}
+.macro .v{font-family:var(--display);font-size:26px;font-weight:700;line-height:1;color:var(--line1);font-variant-numeric:tabular-nums}
+.macro.kcal .v{color:var(--line2)}
+.macro .k{font-family:var(--display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-top:6px}
+
+/* blocos expansíveis (refeições e treinos) */
+.fold{background:var(--panel);border:1px solid var(--edge);border-radius:12px;overflow:hidden;margin-bottom:9px}
+.fold summary{list-style:none;cursor:pointer;padding:14px 15px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
+.fold summary::-webkit-details-marker{display:none}
+.fold .idx{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.1em;color:var(--line2);border:1px solid var(--edge);border-radius:6px;padding:3px 7px;min-width:30px;text-align:center}
+.fold .nm{font-size:15px;font-weight:600}
+.fold .nm small{display:block;font-size:12.5px;color:var(--dim);font-weight:400;margin-top:1px}
+.fold .kc{font-family:var(--display);font-size:17px;font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
+.fold[open] .kc{color:var(--line1)}
+.fold .corpo{border-top:1px solid var(--edge);padding:4px 15px 14px}
+.fold ul.itens{margin:0;padding:2px 0 0 20px}
+.fold ul.itens li{padding:5px 0;font-size:14px;color:#C3D0DA}
+.fold ul.itens li em{color:var(--line2);font-style:normal}
+.fold.hoje{border-color:var(--line2)}
+.fold.hoje .idx{background:var(--line2);color:var(--ink);border-color:var(--line2)}
+
+/* exercícios */
+.ex{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:11px 0;border-bottom:1px solid rgba(36,53,67,.55)}
+.ex:last-child{border-bottom:none}
+.ex .n{font-size:14.5px;color:var(--chalk);font-weight:500}
+.ex .r{font-family:var(--display);font-size:17px;font-weight:600;color:var(--line1);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ex .h{grid-column:1/-1;font-size:12px;color:var(--dimmer);font-family:var(--display);letter-spacing:.08em}
+.ex .d{grid-column:1/-1;font-size:12.5px;color:var(--dim);margin-top:3px}
+
+.rules{list-style:none;margin:0;padding:0}
+.rules li{padding:12px 0 12px 26px;position:relative;border-bottom:1px solid rgba(36,53,67,.55);font-size:14.5px;color:#C3D0DA}
+.rules li:last-child{border-bottom:none}
+.rules li::before{content:"";position:absolute;left:6px;top:19px;width:7px;height:7px;border-radius:50%;background:var(--line1)}
+.rules li b{color:var(--chalk);font-weight:600}
+
+/* registro */
+.marks{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:2px 0 4px}
+.mark{appearance:none;cursor:pointer;text-align:left;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:14px 15px;color:var(--dim);font-family:var(--body);font-size:14px;display:flex;align-items:center;gap:11px;transition:background .16s,border-color .16s,color .16s}
+.mark .box{width:22px;height:22px;border-radius:7px;flex:none;border:2px solid var(--dimmer);position:relative;transition:inherit}
+.mark .box::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid var(--ink);border-width:0 2.5px 2.5px 0;transform:rotate(42deg) scale(0);transition:transform .18s cubic-bezier(.3,1.5,.6,1)}
+.mark .cap{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;line-height:1.1}
+.mark .cap small{display:block;font-family:var(--body);font-size:11.5px;letter-spacing:0;text-transform:none;color:var(--dimmer);font-weight:400;margin-top:2px}
+.mark.on{color:var(--chalk)}
+.mark.t.on{border-color:var(--line2);background:rgba(232,163,61,.12)}
+.mark.t.on .box{border-color:var(--line2);background:var(--line2)}
+.mark.d.on{border-color:var(--line1);background:rgba(43,179,192,.12)}
+.mark.d.on .box{border-color:var(--line1);background:var(--line1)}
+.mark.on .box::after{transform:rotate(42deg) scale(1)}
+.mark:disabled{opacity:.4;cursor:default}
+.mark:focus-visible{outline:2px solid var(--line1);outline-offset:2px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--panel);border:1px solid var(--edge);border-radius:11px;padding:14px 8px;text-align:center}
+.stat .v{font-family:var(--display);font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat .v span{font-size:16px;font-weight:500;color:var(--dim)}
+.stat.t .v{color:var(--line2)}
+.stat.d .v{color:var(--line1)}
+.stat.s .v{color:var(--chalk)}
+.stat .k{font-family:var(--display);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-top:7px;line-height:1.35}
+
+.calhead,.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.calhead{margin-bottom:6px}
+.calhead div{font-family:var(--display);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);text-align:center}
+.cell{appearance:none;cursor:pointer;font-family:inherit;background:var(--panel);border:1px solid var(--edge);border-radius:9px;padding:7px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;transition:border-color .16s,background .16s}
+.cell .d{font-family:var(--display);font-size:15px;font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1}
+.cell .pips{display:flex;gap:3px;height:6px}
+.cell .pip{width:6px;height:6px;border-radius:50%;background:var(--edge)}
+.cell .pip.t.on{background:var(--line2)}
+.cell .pip.d.on{background:var(--line1)}
+.cell .pip.off{background:transparent;border:1px solid var(--edge)}
+.cell.future{opacity:.3;cursor:default}
+.cell.today{border-color:var(--line1)}
+.cell.today .d{color:var(--line1)}
+.cell.sel{background:var(--panel-2);border-color:var(--chalk)}
+.cell.sel .d{color:var(--chalk)}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--dim)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:8px;height:8px;border-radius:50%;display:block}
+.selday{font-family:var(--display);font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+.selday b{color:var(--chalk);font-weight:600}
+.wipe{appearance:none;cursor:pointer;width:100%;background:none;border:1px solid var(--edge);border-radius:10px;padding:12px;color:var(--dimmer);font-family:var(--display);font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.wipe:active{color:var(--signal);border-color:var(--signal)}
+
+nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(13,20,27,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--edge);padding-bottom:env(safe-area-inset-bottom)}
+nav button{appearance:none;background:none;border:none;cursor:pointer;padding:10px 1px 11px;color:var(--dimmer);font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:5px;border-top:2px solid transparent;margin-top:-1px;transition:color .18s}
+nav button .ico{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--line1);border-top-color:var(--line1)}
+nav button:focus-visible{outline:2px solid var(--line1);outline-offset:-3px}
+
+.foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--edge);font-size:12.5px;color:var(--dimmer);line-height:1.6}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-row">
+    <h1 class="today-name" id="dayName">—</h1>
+    <div class="clock" id="clock">--:--</div>
+  </div>
+  <div class="today-sub" id="daySub">—</div>
+</header>
+
+<main>
+  <section class="view on" id="v-hoje"></section>
+  <section class="view" id="v-treino"></section>
+  <section class="view" id="v-dieta"></section>
+  <section class="view" id="v-registro"></section>
+  <section class="view" id="v-mais"></section>
+</main>
+
+<nav id="nav"></nav>
+
+<script>
+/* =========================================================
+   1. MODELO — fonte única da verdade.
+      Editar aqui muda todas as telas.
+   ========================================================= */
+
+const PLANO = {
+  meta:{ kcal:2600, ptn:148, cho:330, gord:75, peso:56.1 },
+
+  /* ---------- TREINOS ----------
+     ex: [nome, "séries x reps", nome no Hevy, dica opcional] */
+  treinos:{
+    upperA:{
+      nome:"Upper A", nota:"Horizontal · ênfase peito", dur:"~80 min",
+      ex:[
+        ["Supino reto (barra)","4 x 8-10","Bench Press (Barbell)"],
+        ["Remada curvada","4 x 8-10","Bent Over Row (Barbell)","Tronco a 30-45°, puxe até o umbigo. Lombar arredondada = pare e reduza a carga."],
+        ["Supino inclinado halteres","3 x 10-12","Incline Bench Press (Dumbbell)"],
+        ["Puxada frente supinada","3 x 10-12","Lat Pulldown (Underhand)","Barra até a parte alta do peito, cotovelos rentes às costelas."],
+        ["Desenvolvimento militar","3 x 8-10","Overhead Press (Barbell)"],
+        ["Elevação lateral","3 x 12-15","Lateral Raise (Dumbbell)"],
+        ["Tríceps testa","3 x 10-12","Skullcrusher"],
+        ["Rosca direta","3 x 10-12","Bicep Curl (Barbell)"]
+      ]},
+    lowerA:{
+      nome:"Lower A", nota:"Ênfase quadríceps", dur:"~60 min",
+      ex:[
+        ["Agachamento livre","4 x 8-10","Squat (Barbell)"],
+        ["Leg press","3 x 10-12","Leg Press"],
+        ["Cadeira extensora","3 x 12-15","Leg Extension"],
+        ["Stiff","3 x 10-12","Romanian Deadlift"],
+        ["Mesa flexora","3 x 10-12","Lying Leg Curl"],
+        ["Panturrilha em pé","4 x 15-20","Standing Calf Raise"],
+        ["Prancha","3 x 40-60s","Plank"]
+      ]},
+    upperB:{
+      nome:"Upper B", nota:"Vertical · ênfase costas", dur:"~80 min",
+      ex:[
+        ["Barra fixa","4 x 6-10","Pull Up","Pense em levar os cotovelos para o bolso de trás, não em passar o queixo."],
+        ["Supino inclinado (barra)","4 x 8-10","Incline Bench Press (Barbell)"],
+        ["Remada cavalinho","4 x 8-10","T-Bar Row"],
+        ["Crucifixo inclinado","3 x 12","Incline Chest Fly (Dumbbell)"],
+        ["Desenvolvimento halteres","3 x 10-12","Shoulder Press (Dumbbell)"],
+        ["Face pull","3 x 12-15","Face Pull","Puxe até o rosto abrindo os cotovelos. É o exercício que compensa a rotação interna do supino."],
+        ["Rosca martelo","3 x 12","Hammer Curl (Dumbbell)"],
+        ["Tríceps corda","3 x 12-15","Triceps Pushdown (Cable)"]
+      ]},
+    lowerB:{
+      nome:"Lower B", nota:"Posterior e glúteo", dur:"~60 min",
+      ex:[
+        ["Hip thrust","4 x 10-12","Hip Thrust (Barbell)"],
+        ["Avanço / afundo","3 x 10-12 cada","Lunge (Dumbbell)"],
+        ["Agachamento búlgaro","3 x 10-12 cada","Bulgarian Split Squat"],
+        ["Mesa flexora","4 x 10-12","Lying Leg Curl"],
+        ["Cadeira abdutora","3 x 15","Hip Abduction"],
+        ["Panturrilha sentado","4 x 15-20","Seated Calf Raise"],
+        ["Elevação de pernas","3 x 15","Hanging Leg Raise"]
+      ]}
+  },
+
+  descanso:[
+    ["Compostos pesados","2-3 min","Agachamento, supino, remada, stiff, desenvolvimento"],
+    ["Isoladores","60-90 s","Rosca, tríceps, elevação lateral, crucifixo"]
+  ],
+
+  incremento:[
+    ["Compostos de perna","5 kg","Agachamento, leg press, stiff, hip thrust"],
+    ["Compostos de tronco","2,5 kg","Supino, remada, desenvolvimento, puxada"],
+    ["Isoladores","1-2 kg","Rosca, tríceps, elevação lateral"],
+    ["Barra fixa","2,5 kg de lastro","Só depois de 10 reps limpas nas 4 séries"]
+  ],
+
+  ciclo:[
+    ["1-2","Estabelecer carga base. Termine cada série com 2-3 reps na reserva."],
+    ["3-4","Buscar o topo da faixa. Bateu em todas as séries, sobe a carga."],
+    ["5-6","Repetir com a carga nova. É aqui que mais se ganha."],
+    ["7","Deload: mesma carga, metade das séries."],
+    ["8","Reinicia visando cargas acima do ciclo anterior."]
+  ],
+
+  tecnica:[
+    "<b>Dupla progressão.</b> Fique na faixa de reps e só suba o peso quando bater o topo em <em>todas</em> as séries. Anote carga e reps de cada sessão — sem registro não existe progressão.",
+    "<b>Travou 3 semanas num exercício?</b> Não insista na carga. Troque a variação (supino reto → halteres) e volte ao original no ciclo seguinte.",
+    "<b>Barra fixa abaixo de 6 reps:</b> use elástico ou máquina assistida até chegar a 6 livres. Acima de 10 nas 4 séries, adicione lastro.",
+    "<b>Bi-set (superset no Hevy):</b> os dois exercícios em sequência, sem descanso entre eles. Só faça se os dois aparelhos estiverem livres — o ganho é de tempo, não de hipertrofia.",
+    "<b>Se a lombar incomodar na remada curvada:</b> troque por remada baixa sentado, remada Smith ou remada com apoio no peito. Mesmo estímulo, zero carga lombar.",
+    "<b>Volume semanal atual:</b> peito 14 séries, costas 18, ombro 12, quadríceps 16, posterior 14, panturrilha 8. Tudo na faixa produtiva."
+  ],
+
+  /* ---------- DIAS ---------- */
+  dias:{
+    1:{ nome:"Segunda", abbr:"Seg", treino:null, hora:null, nota:"Chegada na cidade · dia mais cheio",
+        rota:[
+          {t:"07:50",l:"Chegada · mototáxi"},
+          {t:"08:00",l:"Matemática Discreta 2",k:1},
+          {t:"10:00",l:"Lanche"},{t:"12:30",l:"Almoço"},
+          {t:"14:00",l:"Cálculo 2",k:1},{t:"16:00",l:"Álgebra Linear",k:1},
+          {t:"18:13",l:"Ônibus · UABJ",s:"Rota 2"},
+          {t:"18:30",l:"Aula perto de casa",k:1},
+          {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+        ]},
+    2:{ nome:"Terça", abbr:"Ter", treino:"upperA", hora:"13:15", nota:"Janela de 3h15 em casa",
+        rota:[
+          {t:"06:30",l:"Café da manhã"},{t:"07:50",l:"Chegada · mototáxi"},
+          {t:"08:00",l:"Física Geral 2",k:1},{t:"09:30",l:"Lanche"},
+          {t:"11:45",l:"Pré-treino",s:"no campus — hipercalórico resolve"},
+          {t:"12:02",l:"Ônibus · UABJ",s:"Rota 2 · em casa ~12h30"},
+          {t:"13:15",l:"Upper A",s:"~80 min",g:1},
+          {t:"15:00",l:"Almoço = pós-treino"},
+          {t:"15:45",l:"Mototáxi",s:"chega 15h55"},
+          {t:"16:00",l:"Álgebra Linear",k:1},
+          {t:"18:13",l:"Ônibus · UABJ"},{t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+        ]},
+    3:{ nome:"Quarta", abbr:"Qua", treino:"lowerA", hora:"06:00", nota:"Treino cedo · dia longo",
+        rota:[
+          {t:"05:30",l:"Acordar"},{t:"05:35",l:"1 banana",s:"nada pesado antes das 6h"},
+          {t:"06:00",l:"Lower A",s:"~60 min",g:1},
+          {t:"07:30",l:"Vitamina",s:"pronta na geladeira"},{t:"07:45",l:"Mototáxi"},
+          {t:"08:00",l:"Matemática Discreta 2",k:1},{t:"10:00",l:"Física Geral 2",k:1},
+          {t:"12:02",l:"Ônibus · UABJ"},{t:"12:45",l:"Almoço"},
+          {t:"14:00",l:"Cálculo 2",k:1},{t:"16:00",l:"Lanche"},
+          {t:"16:33",l:"Ônibus · UABJ",s:"Rota 1"},
+          {t:"18:30",l:"Aula perto de casa",k:1},
+          {t:"20:00",l:"Jantar"},{t:"22:00",l:"Dormir"}
+        ]},
+    4:{ nome:"Quinta", abbr:"Qui", treino:"upperB", hora:"13:30", nota:"Tarde inteira livre",
+        rota:[
+          {t:"06:30",l:"Café da manhã"},{t:"07:50",l:"Chegada · mototáxi"},
+          {t:"08:00",l:"Programação 2",s:"AEB",k:1},{t:"10:00",l:"Inglês 2",s:"AEB",k:1},
+          {t:"12:00",l:"Pré-treino"},
+          {t:"12:02",l:"Ônibus · UABJ",s:"em casa ~12h30"},
+          {t:"13:30",l:"Upper B",s:"~80 min",g:1},
+          {t:"15:15",l:"Almoço = pós-treino"},{t:"18:00",l:"Lanche"},
+          {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+        ]},
+    5:{ nome:"Sexta", abbr:"Sex", treino:"lowerB", hora:"06:00", nota:"Dia mais leve · EAD à tarde",
+        rota:[
+          {t:"05:30",l:"Acordar"},{t:"05:35",l:"1 banana"},
+          {t:"06:00",l:"Lower B",s:"~60 min",g:1},
+          {t:"07:30",l:"Vitamina"},{t:"07:45",l:"Mototáxi"},
+          {t:"08:00",l:"Programação 2",s:"AEB · presencial",k:1},
+          {t:"10:00",l:"Inglês 2",s:"virtual",k:1},
+          {t:"12:02",l:"Ônibus · UABJ"},{t:"12:45",l:"Almoço"},
+          {t:"14:00",l:"Legislação",s:"EAD",k:1},{t:"16:00",l:"Gestão Ambiental",s:"EAD",k:1},
+          {t:"18:00",l:"Lanche"},{t:"20:00",l:"Jantar"},{t:"22:30",l:"Dormir"}
+        ]},
+    6:{ nome:"Sábado", abbr:"Sáb", treino:null, hora:null, nota:"Descanso · manter as calorias",
+        rota:[
+          {t:"08:00",l:"Café da manhã"},{t:"10:30",l:"Lanche"},{t:"13:00",l:"Almoço"},
+          {t:"16:00",l:"Lanche"},{t:"18:00",l:"Refeição extra",s:"a que era pós-treino"},
+          {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+        ]},
+    0:{ nome:"Domingo", abbr:"Dom", treino:null, hora:null, nota:"Descanso · acordar no mesmo horário",
+        rota:[
+          {t:"08:00",l:"Café da manhã"},{t:"10:30",l:"Lanche"},{t:"13:00",l:"Almoço"},
+          {t:"16:00",l:"Lanche"},{t:"18:00",l:"Refeição extra"},
+          {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+        ]}
+  },
+
+  refeicoes:[
+    {n:1,nome:"Café da manhã",kcal:500,quando:"ao acordar",itens:[
+      "60 g de aveia em flocos","1 banana média",
+      "200 ml de leite integral <em>ou</em> 26-30 g de leite em pó em 200 ml de água",
+      "10 g de pasta de amendoim <em>(20 g se o leite em pó for desnatado)</em>"]},
+    {n:2,nome:"Lanche",kcal:350,quando:"meio da manhã",itens:[
+      "2 fatias de pão integral","2 ovos inteiros","1 maçã"]},
+    {n:3,nome:"Almoço",kcal:600,quando:"",itens:[
+      "180 g de arroz cozido <em>ou</em> 145 g de macarrão cozido (65 g cru)",
+      "100 g de feijão","120 g de frango grelhado",
+      "Salada à vontade + 1 colher de sopa de azeite"]},
+    {n:4,nome:"Pré-treino",kcal:330,quando:"60-90 min antes",itens:[
+      "1 pão francês + 20 g de pasta de amendoim + 1 banana",
+      "<em>ou</em> 3 scoops (~80 g) de hipercalórico em 250 ml de água"]},
+    {n:5,nome:"Pós-treino",kcal:350,quando:"",itens:[
+      "200 g de iogurte grego natural","200 g de batata-doce cozida"]},
+    {n:6,nome:"Jantar",kcal:500,quando:"",itens:[
+      "150 g de arroz cozido <em>ou</em> 120 g de macarrão cozido (55 g cru)",
+      "100 g de patinho moído <em>(ou tilápia, ou frango)</em>",
+      "Legumes refogados + 1 colher de chá de azeite",
+      "100 g de iogurte natural <em>ou</em> 60 g de cottage"]}
+  ],
+
+  trocas:[
+    ["Leite integral 200 ml","26-30 g de leite em pó"],
+    ["Arroz 180 g / 150 g","Macarrão 145 g / 120 g cozido"],
+    ["Batata-doce 200 g","Arroz 150 g · Mandioca 180 g · Batata 250 g"],
+    ["Iogurte grego 200 g","120 g frango · 150 g atum · 4 claras + 1 ovo"],
+    ["Iogurte natural 100 g","Cottage 60 g · Kefir 100 ml · Ricota 60 g"],
+    ["Frango 120 g","Tilápia · patinho · peito de peru"]
+  ],
+
+  ajustes:[
+    ["Ganho 0,25-0,4 kg/sem","Ideal — não mexa"],
+    ["Parado por 2 semanas","Some ~150 kcal"],
+    ["Ganho acima de 0,5 kg/sem","Corte ~150 kcal"],
+    ["Difícil comer tudo","Vitamina líquida ~600 kcal"]
+  ],
+
+  onibus:[["12:02","Rota 2 · micro","~12:30"],["16:33","Rota 1 · ônibus","~17:13"],["18:13","Rota 2 · ônibus","~18:55"]],
+
+  sono:[["Terça · Quinta","22:30","06:30"],["Quarta · Sexta","22:00","05:30"],["Demais dias","22:30","06:30"]],
+
+  sonoRegras:[
+    "<b>Acorde no mesmo horário todo dia</b>, inclusive fim de semana. É o fator isolado mais poderoso — dormir até tarde no sábado desregula a semana inteira.",
+    "<b>Sol nos primeiros 30 min</b> após acordar, por 10-15 min. Ancora o relógio biológico e é o que faz o sono chegar ~15 h depois.",
+    "<b>Cafeína só até as 14h.</b> A meia-vida é de 5-6 h; um café às 18h ainda está metade ativo à meia-noite.",
+    "<b>Última hora sem tela estimulante.</b> O problema é mais o conteúdo que a luz azul.",
+    "<b>Quarto escuro e frio.</b> A temperatura corporal precisa cair para o sono iniciar.",
+    "<b>Passou de 20 min acordado na cama, levante.</b> Faça algo monótono com luz baixa e volte quando sentir sono."
+  ],
+
+  apetite:[
+    "<b>Calorias líquidas.</b> Não ativam saciedade como sólidos — uma vitamina de 600 kcal desce em 3 minutos.",
+    "<b>Densidade acima de volume.</b> Azeite, pasta de amendoim, castanhas, leite integral.",
+    "<b>Não beba durante a refeição.</b> Água enche o estômago sem entregar nada.",
+    "<b>Menos fibra nas refeições grandes.</b> Arroz branco rende mais que integral quando o objetivo é volume calórico.",
+    "<b>Coma sempre no mesmo horário.</b> A grelina se condiciona — em 2-3 semanas a fome aparece na hora certa.",
+    "<b>Espere ~1 h depois do treino.</b> O exercício suprime o apetite agudamente."
+  ]
+};
+
+/* =========================================================
+   2. REGISTRO — persistência no aparelho
+   ========================================================= */
+
+const LOG = (() => {
+  const KEY = "rotina:log:v1";
+  let dados = {}, persiste = true;
+  try { const cru = localStorage.getItem(KEY); dados = cru ? JSON.parse(cru) : {}; }
+  catch (e) { persiste = false; dados = {}; }
+
+  const salvar = () => {
+    if (!persiste) return;
+    try { localStorage.setItem(KEY, JSON.stringify(dados)); } catch (e) { persiste = false; }
+  };
+
+  return {
+    get persiste(){ return persiste; },
+    dia: k => dados[k] || { t:false, d:false },
+    alterna(k, campo){
+      const at = dados[k] || { t:false, d:false };
+      at[campo] = !at[campo];
+      if (!at.t && !at.d) delete dados[k]; else dados[k] = at;
+      salvar();
+    },
+    apagarTudo(){ dados = {}; salvar(); try{ localStorage.removeItem(KEY); }catch(e){} }
+  };
+})();
+
+/* =========================================================
+   3. UTILITÁRIOS
+   ========================================================= */
+
+const $ = (s, r=document) => r.querySelector(s);
+const min = hhmm => { const [h,m] = hhmm.split(":").map(Number); return h*60+m; };
+const agora = () => { const d = new Date(); return d.getHours()*60 + d.getMinutes(); };
+const chave = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const hoje = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+const somaDias = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+const treinaEm = dow => !!PLANO.dias[dow].treino;
+
+let selecionado = chave(new Date());
+
+/* =========================================================
+   4. TELA: HOJE
+   ========================================================= */
+
+function marcadores(k, compacto){
+  const est = LOG.dia(k);
+  const dow = new Date(k + "T12:00:00").getDay();
+  const temTreino = treinaEm(dow);
+  const nomeTr = temTreino ? PLANO.treinos[PLANO.dias[dow].treino].nome : "dia de descanso";
+  return `<div class="marks">
+    <button class="mark t ${est.t?"on":""}" data-k="${k}" data-c="t" type="button" ${temTreino?"":"disabled"}>
+      <span class="box"></span><span class="cap">Treinei<small>${nomeTr}</small></span>
+    </button>
+    <button class="mark d ${est.d?"on":""}" data-k="${k}" data-c="d" type="button">
+      <span class="box"></span><span class="cap">Dieta<small>${compacto?"segui o plano":"bati as 2600 kcal"}</small></span>
+    </button>
+  </div>`;
+}
+
+function renderHoje(){
+  const dow = new Date().getDay();
+  const dia = PLANO.dias[dow];
+  const tr = dia.treino ? PLANO.treinos[dia.treino] : null;
+  const now = agora();
+  const k = chave(new Date());
+
+  $("#dayName").textContent = dia.nome;
+  $("#daySub").innerHTML = tr
+    ? `<span class="badge">${tr.nome} · ${dia.hora}</span> &nbsp;·&nbsp; ${dia.nota}`
+    : `<span class="badge rest">Descanso</span> &nbsp;·&nbsp; ${dia.nota}`;
+
+  let idxNow = -1;
+  dia.rota.forEach((p,i)=>{ if (min(p.t) <= now) idxNow = i; });
+
+  const stops = dia.rota.map((p,i)=>{
+    const cls = ["stop", p.g?"gym":(p.k?"key":""), i===idxNow?"now":(i<idxNow?"done":"")].filter(Boolean).join(" ");
+    return `<div class="${cls}"><div class="t">${p.t}</div><div class="dot"></div>
+      <div class="lbl">${p.l}${p.s?`<small>${p.s}</small>`:""}</div></div>`;
+  }).join("");
+
+  $("#v-hoje").innerHTML = `
+    <h2 class="sec">Marcar o dia</h2>${marcadores(k, true)}
+    <h2 class="sec">Rota de hoje</h2><div class="route">${stops}</div>
+    ${tr?`<div class="note"><strong>${tr.nome}</strong> — ${tr.nota}, ${tr.dur}. Os exercícios estão na aba Treino.</div>`:""}
+    <div class="foot">Horários de ônibus são estimativas do Guia de Mobilidade UABJ e variam com o trânsito.</div>`;
+
+  ligarMarcadores("#v-hoje");
+}
+
+/* =========================================================
+   5. TELA: TREINO
+   ========================================================= */
+
+function renderTreino(){
+  const dow = new Date().getDay();
+  const hojeId = PLANO.dias[dow].treino;
+
+  const blocos = Object.entries(PLANO.treinos).map(([id,t],i)=>{
+    const ehHoje = id === hojeId;
+    const exs = t.ex.map(([nome,reps,hevy,dica])=>`
+      <div class="ex">
+        <div class="n">${nome}</div><div class="r">${reps}</div>
+        <div class="h">${hevy}</div>
+        ${dica?`<div class="d">${dica}</div>`:""}
+      </div>`).join("");
+    return `<details class="fold ${ehHoje?"hoje":""}" ${ehHoje?"open":""}>
+      <summary>
+        <span class="idx">${i+1}</span>
+        <span class="nm">${t.nome}${ehHoje?" · hoje":""}<small>${t.nota}</small></span>
+        <span class="kc">${t.dur}</span>
+      </summary>
+      <div class="corpo">${exs}</div>
+    </details>`;
+  }).join("");
+
+  $("#v-treino").innerHTML = `
+    <h2 class="sec">Os quatro treinos</h2>${blocos}
+
+    <h2 class="sec">Descanso entre séries</h2>
+    <div class="card"><table>
+      ${PLANO.descanso.map(([a,b,c])=>`<tr><td>${a}<br><span class="muted">${c}</span></td><td class="num">${b}</td></tr>`).join("")}
+    </table></div>
+
+    <h2 class="sec">Progressão de carga</h2>
+    <div class="note info"><strong>Dupla progressão:</strong> só suba o peso quando bater o topo da faixa de reps em <em>todas</em> as séries.</div>
+    <div class="card"><table>
+      <tr><th>Tipo</th><th>Incremento</th></tr>
+      ${PLANO.incremento.map(([a,b,c])=>`<tr><td>${a}<br><span class="muted">${c}</span></td><td class="num">${b}</td></tr>`).join("")}
+    </table></div>
+
+    <h2 class="sec">Ciclo de 8 semanas</h2>
+    <div class="card"><table>
+      <tr><th>Semana</th><th>O que fazer</th></tr>
+      ${PLANO.ciclo.map(([s,o])=>`<tr><td class="num" style="text-align:left">${s}</td><td class="muted" style="text-align:left">${o}</td></tr>`).join("")}
+    </table></div>
+
+    <h2 class="sec">Técnica e regras</h2>
+    <div class="card"><ul class="rules">${PLANO.tecnica.map(t=>`<li>${t}</li>`).join("")}</ul></div>
+
+    <div class="foot">Os nomes em cinza sob cada exercício são os termos de busca no Hevy, que é em inglês por padrão.</div>`;
+}
+
+/* =========================================================
+   6. TELA: DIETA
+   ========================================================= */
+
+function renderDieta(){
+  const m = PLANO.meta;
+  const meals = PLANO.refeicoes.map(r=>`
+    <details class="fold"><summary>
+      <span class="idx">${r.n}</span>
+      <span class="nm">${r.nome}${r.quando?`<small>${r.quando}</small>`:""}</span>
+      <span class="kc">${r.kcal}</span>
+    </summary><div class="corpo"><ul class="itens">${r.itens.map(i=>`<li>${i}</li>`).join("")}</ul></div></details>`).join("");
+
+  $("#v-dieta").innerHTML = `
+    <h2 class="sec">Metas do dia</h2>
+    <div class="macros">
+      <div class="macro kcal"><div class="v">${m.kcal}</div><div class="k">kcal</div></div>
+      <div class="macro"><div class="v">${m.ptn}</div><div class="k">ptn g</div></div>
+      <div class="macro"><div class="v">${m.cho}</div><div class="k">cho g</div></div>
+      <div class="macro"><div class="v">${m.gord}</div><div class="k">gord g</div></div>
+    </div>
+    <div class="note">${m.ptn} g de proteína são <strong>${(m.ptn/m.peso).toFixed(1)} g por kg</strong> — acima da faixa necessária para hipertrofia (1,6-2,2 g/kg).</div>
+
+    <h2 class="sec">Refeições</h2>${meals}
+
+    <h2 class="sec">Trocas</h2>
+    <div class="card"><table>${PLANO.trocas.map(([a,b])=>`<tr><td>${a}</td><td class="muted">${b}</td></tr>`).join("")}</table></div>
+
+    <h2 class="sec">Como ajustar</h2>
+    <div class="card"><table>${PLANO.ajustes.map(([a,b])=>`<tr><td>${a}</td><td class="muted">${b}</td></tr>`).join("")}</table></div>
+    <div class="note">Pese-se 2-3× por semana, em jejum ao acordar, e trabalhe com a <strong>média semanal</strong>.</div>
+
+    <h2 class="sec">Nos dias de descanso</h2>
+    <div class="note alert">Mantenha as mesmas calorias. Cortar comida no descanso é o erro mais comum de quem quer ganhar massa — é justamente aí que o músculo é reconstruído.</div>
+
+    <div class="foot">Plano estimado a partir de um TDEE de ~2200 kcal. Leve para sua nutricionista — ela tem o número exato.</div>`;
+}
+
+/* =========================================================
+   7. TELA: REGISTRO
+   ========================================================= */
+
+function estatisticas(janela){
+  const h = hoje();
+  let trFeitos=0, trPrevistos=0, dtFeitos=0, dtDias=0;
+  for (let i=0;i<janela;i++){
+    const d = somaDias(h,-i), est = LOG.dia(chave(d));
+    dtDias++; if (est.d) dtFeitos++;
+    if (treinaEm(d.getDay())){ trPrevistos++; if (est.t) trFeitos++; }
+  }
+  let seq = 0, inicio = LOG.dia(chave(h)).d ? 0 : 1;
+  for (let i=inicio;i<400;i++){ if (LOG.dia(chave(somaDias(h,-i))).d) seq++; else break; }
+  return { trFeitos, trPrevistos, trPct: trPrevistos?Math.round(trFeitos/trPrevistos*100):0,
+           dtFeitos, dtDias, dtPct: dtDias?Math.round(dtFeitos/dtDias*100):0, seq };
+}
+
+function renderRegistro(){
+  const h = hoje(), st = estatisticas(28);
+  const offSeg = (h.getDay()+6)%7;
+  const inicio = somaDias(somaDias(h,6-offSeg),-41);
+
+  let celulas = "";
+  for (let i=0;i<42;i++){
+    const d = somaDias(inicio,i), k = chave(d), futuro = d > h;
+    const est = LOG.dia(k), prev = treinaEm(d.getDay());
+    const cls = ["cell", futuro?"future":"", k===chave(h)?"today":"", k===selecionado?"sel":""].filter(Boolean).join(" ");
+    celulas += `<button class="${cls}" data-dia="${k}" type="button" ${futuro?"disabled":""}>
+      <span class="d">${d.getDate()}</span>
+      <span class="pips"><i class="pip t ${est.t?"on":(prev?"":"off")}"></i><i class="pip d ${est.d?"on":""}"></i></span>
+    </button>`;
+  }
+
+  const dSel = new Date(selecionado + "T12:00:00");
+  const ehHoje = selecionado === chave(h);
+
+  $("#v-registro").innerHTML = `
+    <h2 class="sec">Últimas 4 semanas</h2>
+    <div class="stats">
+      <div class="stat t"><div class="v">${st.trPct}<span>%</span></div><div class="k">Treinos<br>${st.trFeitos} de ${st.trPrevistos}</div></div>
+      <div class="stat d"><div class="v">${st.dtPct}<span>%</span></div><div class="k">Dieta<br>${st.dtFeitos} de ${st.dtDias}</div></div>
+      <div class="stat s"><div class="v">${st.seq}</div><div class="k">Dias<br>seguidos</div></div>
+    </div>
+
+    <h2 class="sec">Histórico</h2>
+    <div class="calhead"><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div><div>Dom</div></div>
+    <div class="cal" id="cal">${celulas}</div>
+    <div class="legend">
+      <span><i style="background:var(--line2)"></i> Treino</span>
+      <span><i style="background:var(--line1)"></i> Dieta</span>
+      <span><i style="background:var(--edge)"></i> Não marcado</span>
+      <span><i style="border:1px solid var(--edge)"></i> Sem treino previsto</span>
+    </div>
+
+    <h2 class="sec">${ehHoje?"Hoje":"Dia selecionado"}</h2>
+    <p class="selday"><b>${PLANO.dias[dSel.getDay()].nome}</b>, ${dSel.getDate()}/${String(dSel.getMonth()+1).padStart(2,"0")}</p>
+    ${marcadores(selecionado,false)}
+    <div class="note quiet">Toque em qualquer dia do histórico para corrigir uma marcação esquecida.</div>
+    ${LOG.persiste?"":`<div class="note alert">Este navegador está bloqueando o armazenamento local — as marcações vão sumir ao fechar.</div>`}
+
+    <h2 class="sec">Dados</h2>
+    <button class="wipe" id="wipe" type="button">Apagar todo o registro</button>
+    <div class="foot">Tudo fica salvo apenas neste aparelho. Nada é enviado para lugar nenhum.</div>`;
+
+  ligarMarcadores("#v-registro");
+  document.querySelectorAll("#cal .cell:not(.future)").forEach(c=>
+    c.addEventListener("click", ()=>{ selecionado = c.dataset.dia; renderRegistro(); }));
+  $("#wipe").addEventListener("click", ()=>{
+    if (confirm("Apagar todas as marcações? Não dá para desfazer.")){
+      LOG.apagarTudo(); renderRegistro(); renderHoje();
+    }
+  });
+}
+
+function ligarMarcadores(escopo){
+  document.querySelectorAll(`${escopo} .mark:not([disabled])`).forEach(b=>
+    b.addEventListener("click", ()=>{
+      LOG.alterna(b.dataset.k, b.dataset.c);
+      renderHoje(); renderRegistro();
+    }));
+}
+
+/* =========================================================
+   8. TELA: MAIS (escala + sono + apetite)
+   ========================================================= */
+
+function renderMais(){
+  const dowHoje = new Date().getDay();
+  const week = [1,2,3,4,5,6,0].map(d=>{
+    const dia = PLANO.dias[d], tr = dia.treino ? PLANO.treinos[dia.treino] : null;
+    const cls = ["day", tr?"train":"rest", d===dowHoje?"here":""].filter(Boolean).join(" ");
+    return `<div class="${cls}"><div class="abbr">${dia.abbr}</div>
+      <div class="what">${tr?tr.nome:"Descanso"}<small>${tr?tr.nota:dia.nota}</small></div>
+      <div class="hour">${dia.hora||"—"}</div></div>`;
+  }).join("");
+
+  $("#v-mais").innerHTML = `
+    <h3 class="sub">Escala</h3>
+    <div class="week">${week}</div>
+
+    <h2 class="sec">Ônibus que importam</h2>
+    <div class="card"><table>
+      <tr><th>Saída UABJ</th><th>Rota</th><th>Em casa</th></tr>
+      ${PLANO.onibus.map(([a,b,c])=>`<tr><td class="num" style="text-align:left">${a}</td><td class="muted">${b}</td><td class="muted">${c}</td></tr>`).join("")}
+    </table></div>
+    <div class="note">A ida é sempre de <strong>mototáxi, ~10 min</strong>. Só a volta depende do ônibus.</div>
+
+    <h3 class="sub">Sono</h3>
+    <div class="card"><table>
+      <tr><th>Dia</th><th>Dormir</th><th>Acordar</th></tr>
+      ${PLANO.sono.map(([d,a,b])=>`<tr><td>${d}</td><td class="num">${a}</td><td class="num">${b}</td></tr>`).join("")}
+    </table></div>
+    <div class="note alert">Os treinos de quarta e sexta às 6h <strong>só funcionam se o sono estiver resolvido</strong>. Se em 3 semanas você estiver arrastado, corte os treinos da manhã antes de cortar horas de sono.</div>
+    <div class="card"><ul class="rules">${PLANO.sonoRegras.map(r=>`<li>${r}</li>`).join("")}</ul></div>
+    <div class="note alert">"Não sentir sono desde pequeno" merece avaliação — pode ser síndrome do atraso de fase do sono, que tem tratamento específico. Um clínico geral ou médico do sono diferencia em uma consulta, e isso vale mais que qualquer suplemento.</div>
+
+    <h3 class="sub">Apetite</h3>
+    <div class="card"><ul class="rules">${PLANO.apetite.map(a=>`<li>${a}</li>`).join("")}</ul></div>
+    <h2 class="sec">A vitamina coringa</h2>
+    <div class="card"><table>
+      <tr><td>300 ml de leite integral</td><td class="num muted">180</td></tr>
+      <tr><td>60 g de aveia</td><td class="num muted">220</td></tr>
+      <tr><td>1 banana</td><td class="num muted">100</td></tr>
+      <tr><td>20 g de pasta de amendoim</td><td class="num muted">120</td></tr>
+      <tr><td><b>Total</b></td><td class="num">620</td></tr>
+    </table></div>
+    <div class="note">Deixe pronta na geladeira na noite anterior aos treinos das 6h.</div>
+    <div class="note alert">Estimulantes de apetite prescritos têm sedação como efeito principal — o que conflita com o treino às 6h — e o ganho tende a ser gordura. Rode as estratégias acima por 4-6 semanas primeiro; se não resolverem, é conversa para a nutricionista.</div>`;
+}
+
+/* =========================================================
+   9. NAVEGAÇÃO
+   ========================================================= */
+
+const TELAS = [
+  {id:"hoje",    rot:"Hoje",    ico:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', fn:renderHoje},
+  {id:"treino",  rot:"Treino",  ico:'<path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/>', fn:renderTreino},
+  {id:"dieta",   rot:"Dieta",   ico:'<path d="M5 3v8a3 3 0 0 0 6 0V3M8 11v10M17 3c-1.5 2-2 4-2 6s.5 3 2 3 2-1 2-3-.5-4-2-6zM17 12v9"/>', fn:renderDieta},
+  {id:"registro",rot:"Registro",ico:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18M9 15l2 2 4-4"/>', fn:renderRegistro},
+  {id:"mais",    rot:"Mais",    ico:'<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="11" cy="18" r="1.5"/>', fn:renderMais}
+];
+
+function ir(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id===`v-${id}`));
+  document.querySelectorAll("#nav button").forEach(b=>{
+    const on = b.dataset.id===id;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-current", on?"page":"false");
+  });
+  window.scrollTo({top:0});
+}
+
+function boot(){
+  $("#nav").innerHTML = TELAS.map(t=>
+    `<button data-id="${t.id}" type="button"><svg class="ico" viewBox="0 0 24 24">${t.ico}</svg>${t.rot}</button>`).join("");
+  document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>ir(b.dataset.id)));
+
+  TELAS.forEach(t=>t.fn());
+  ir("hoje");
+
+  const tick = () => {
+    const d = new Date();
+    $("#clock").textContent = String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  };
+  tick();
+  setInterval(tick, 20000);
+  setInterval(renderHoje, 60000);
+
+  /* offline — só funciona em https (Netlify) ou localhost, não em file:// */
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () =>
+      navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+  }
+}
+
+boot();
+</script>
+</body>
+</html>
