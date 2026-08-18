@@ -23,7 +23,7 @@ Build command vazio, publish directory `.`.
 1. **Não introduzir build step, bundler, npm ou framework.** O valor do projeto é editar um arquivo e dar push. Se uma sugestão exige `npm install`, ela está errada para este projeto.
 2. **Todo conteúdo vive no objeto `PLANO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo `PLANO`, porque é ali que o dono edita.
 3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v3"` → `"rotina-v4"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
-4. **Nada de armazenamento remoto.** O registro de treino/dieta fica em `localStorage`, protegido por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
+4. **Nada de armazenamento remoto.** Marcações, cargas por exercício e peso corporal ficam em `localStorage`, protegidos por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
 5. **Mobile-first.** Viewport de ~390px é o alvo. Testar mentalmente nessa largura antes de sugerir layout.
 
 ## Estrutura do JS
@@ -31,16 +31,26 @@ Build command vazio, publish directory `.`.
 Numerada por seções comentadas dentro do `<script>`:
 
 1. `PLANO` — modelo de dados (treinos, dias, refeições, sono, apetite)
-2. `LOG` — persistência em localStorage
-3. Utilitários de data e hora
+2. `LOG`, `CARGAS`, `PESO` — persistência em localStorage
+3. Utilitários de data, número e o helper `grafico()` (SVG à mão, sem biblioteca)
 4. `renderHoje` — timeline do dia, estilo diagrama de rota de ônibus
-5. `renderTreino` — os 4 treinos, progressão de carga, técnica
-6. `renderDieta` — macros e refeições
-7. `renderRegistro` — estatísticas e calendário de 6 semanas
-8. `renderMais` — escala, sono, apetite
-9. Navegação de 5 abas
+5. `CRON` — cronômetro de descanso, barra fixa e pop-up de fim
+6. `renderTreino` — os 4 treinos, registro de carga, progressão, técnica
+7. `renderDieta` — macros e refeições
+8. `renderRegistro` — estatísticas, calendário de 6 semanas, gráficos de carga e peso
+9. `renderMais` — escala, sono, apetite
+10. Navegação de 5 abas
 
 Cada render escreve em `innerHTML` de uma `<section class="view">`. As telas são reconstruídas por inteiro, não atualizadas parcialmente — é simples e rápido o bastante nesta escala.
+
+Duas exceções deliberadas, ambas comentadas no código:
+
+- **Salvar carga não re-renderiza a aba Treino** — só troca a linha daquele exercício. Um render completo fecharia os `<details>` abertos no meio da série.
+- **A barra do cronômetro e o pop-up vivem fora das `.view`**, como irmãos do `<nav>`, senão o primeiro render os apagaria.
+
+O cronômetro conta pelo **instante de término** (`Date.now() + seg*1000`), nunca decrementando um contador: o navegador congela timers em segundo plano, mas o relógio do aparelho não. Ao voltar para o app, o alarme dispara atrasado em vez de sumir.
+
+Carga é indexada pelo **nome do exercício normalizado** — renomear no `PLANO` começa um histórico novo.
 
 ## Design
 

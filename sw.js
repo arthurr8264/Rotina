@@ -1,11 +1,11 @@
 /* =========================================================
    Service worker — faz o app abrir sem internet.
    Ao publicar uma versão nova do index.html, suba o número
-   em CACHE (v3 -> v4). Isso força o navegador a buscar os
+   em CACHE (v4 -> v5). Isso força o navegador a buscar os
    arquivos novos em vez de servir o cache antigo.
    ========================================================= */
 
-const CACHE = "rotina-v3";
+const CACHE = "rotina-v4";
 
 const ESSENCIAIS = [
   "./",

@@ -27,10 +27,10 @@ Se o app abrir em branco depois de uma edição, foi erro de sintaxe. Abra o con
 Procure por `treinos:` e ache o treino. Cada exercício é uma linha assim:
 
 ```js
-["Supino reto (barra)","4 x 8-10","Bench Press (Barbell)"],
+["Supino reto (barra)","4 x 8-10","Bench Press (Barbell)","",150],
 ```
 
-A ordem é: **nome** · **séries x reps** · **nome no Hevy** · **dica (opcional)**.
+A ordem é: **nome** · **séries x reps** · **nome no Hevy** · **dica (opcional)** · **descanso em segundos (opcional)**.
 
 Para trocar supino reto por supino na máquina:
 
@@ -43,6 +43,24 @@ Para adicionar uma dica, acrescente um quarto texto:
 ```js
 ["Supino máquina","4 x 8-10","Chest Press (Machine)","Não trave o cotovelo no topo."],
 ```
+
+### Mudar o tempo de descanso de um exercício
+
+É o **quinto item**, em segundos. `150` são 2min30.
+
+```js
+["Supino máquina","4 x 8-10","Chest Press (Machine)","",180],
+```
+
+A dica fica como `""` quando você não quer nenhuma, mas ainda precisa do quinto item — as posições contam.
+
+Quem não tem o quinto item usa o padrão, logo abaixo dos treinos:
+
+```js
+descansoSeg:90,
+```
+
+Esse número é o que aparece no botão ao lado de cada exercício, e é o tempo que o cronômetro conta.
 
 ### Adicionar ou remover um exercício
 
@@ -130,6 +148,36 @@ Ordem: **descrição** · **dormir** · **acordar**.
 ```js
 "<b>Título em negrito.</b> Explicação normal.",
 ```
+
+---
+
+## O que o app guarda no aparelho
+
+Três coisas, todas só no celular, nada em servidor:
+
+| O quê | Onde se registra | Onde se vê |
+|---|---|---|
+| Marcação de treino e dieta | Aba Hoje ou Registro | Calendário e estatísticas |
+| Carga de cada exercício | Campo `kg × reps` na aba Treino | Linha "última vez" e gráfico no Registro |
+| Peso corporal | Campo na aba Registro | Gráfico e ritmo semanal |
+
+### Como funciona o registro de carga
+
+A carga é guardada **pelo nome do exercício**. Duas consequências:
+
+- **Renomear um exercício começa um histórico novo.** Se você trocar "Supino reto (barra)" por "Supino reto", o app passa a contar do zero. Se quiser preservar o histórico, mantenha o nome.
+- **O mesmo nome em dois treinos compartilha o histórico.** "Mesa flexora" está em Lower A e Lower B, e é o mesmo exercício — então é uma linha só no gráfico, que é o comportamento certo.
+
+Só entra **um registro por dia por exercício**: salvar de novo no mesmo dia corrige o valor em vez de duplicar. As repetições são opcionais — dá para anotar só o peso.
+
+### Apagar dados
+
+Na aba Registro, no fim, há dois botões separados:
+
+- **Apagar marcações do calendário** — some com os checks de treino e dieta, mantém cargas e pesos.
+- **Apagar cargas e pesos** — some com todo o histórico dos exercícios e da balança.
+
+São separados de propósito: limpar um check esquecido não pode custar meses de progressão.
 
 ---
 
