@@ -5,7 +5,7 @@
    arquivos novos em vez de servir o cache antigo.
    ========================================================= */
 
-const CACHE = "rotina-v4";
+const CACHE = "rotina-v5";
 
 const ESSENCIAIS = [
   "./",
