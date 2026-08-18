@@ -71,8 +71,12 @@ Manter essa direção ao adicionar telas. Não introduzir gradientes, sombras co
 Estudante de Engenharia de Computação na UFRPE (Unidade Acadêmica de Belo Jardim), 2º período.
 Mora em outra cidade e depende do ônibus universitário para voltar — por isso os horários de treino são tão específicos e frágeis. Ida de mototáxi (~10 min, horário livre); volta só de ônibus.
 
-A escala atual: Upper A (ter 13h15), Lower A (qua 6h), Upper B (qui 13h30), Lower B (sex 6h).
-Segunda, sábado e domingo são descanso.
+A academia abre 5h-12h e 14h-21h30, fechada entre 12h e 14h — é essa janela morta que define os horários de treino.
+
+A escala atual: Lower A (seg 10h45), Upper A (ter 19h15), Upper B (qui 14h), Lower B (sex 6h).
+Quarta, sábado e domingo são descanso.
+
+O ônibus das 10h15 (chega em casa ~10h40) é o que viabiliza o treino da segunda, nos dias em que a aula termina às 10h.
 
 Objetivo: hipertrofia com superávit calórico (~2600 kcal). Acompanhamento com nutricionista à parte.
 

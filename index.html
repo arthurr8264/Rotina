@@ -382,55 +382,58 @@ const PLANO = {
 
   /* ---------- DIAS ---------- */
   dias:{
-    1:{ nome:"Segunda", abbr:"Seg", treino:null, hora:null, nota:"Chegada na cidade · dia mais cheio",
+    1:{ nome:"Segunda", abbr:"Seg", treino:"lowerA", hora:"10:45", nota:"Janela até 12h, quando a academia fecha",
         rota:[
           {t:"07:50",l:"Chegada · mototáxi"},
           {t:"08:00",l:"Matemática Discreta 2",s:"Sala 01C",k:1},
-          {t:"10:00",l:"Lanche"},{t:"12:30",l:"Almoço"},
+          {t:"09:30",l:"Lanche",s:"shaker"},
+          {t:"10:15",l:"Ônibus · UABJ",s:"Rota da manhã · em casa ~10:40"},
+          {t:"10:45",l:"Lower A",s:"~60 min · a academia fecha às 12h",g:1},
+          {t:"12:15",l:"Almoço = pós-treino"},
+          {t:"13:45",l:"Mototáxi"},
           {t:"14:00",l:"Cálculo 2",s:"Sala 04B",k:1},{t:"16:00",l:"Álgebra Linear",s:"Sala 05B",k:1},
           {t:"18:13",l:"Ônibus · UABJ",s:"Rota 2"},
           {t:"18:30",l:"Aula Robótica",k:1},
           {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
         ]},
-    2:{ nome:"Terça", abbr:"Ter", treino:"upperA", hora:"13:15", nota:"Janela de 3h15 em casa",
+    2:{ nome:"Terça", abbr:"Ter", treino:"upperA", hora:"19:15", nota:"Noite livre após a aula",
         rota:[
           {t:"06:30",l:"Café da manhã"},{t:"07:50",l:"Chegada · mototáxi"},
-          {t:"08:00",l:"Física Geral 2",s:"Sala 05C",k:1},{t:"09:30",l:"Lanche"},
-          {t:"11:45",l:"Pré-treino",s:"no campus — hipercalórico resolve"},
-          {t:"12:02",l:"Ônibus · UABJ",s:"Rota 2 · em casa ~12h30"},
-          {t:"13:15",l:"Upper A",s:"~80 min",g:1},
-          {t:"15:00",l:"Almoço = pós-treino"},
-          {t:"15:45",l:"Mototáxi",s:"chega 15h55"},
+          {t:"08:00",l:"Física Geral 2",s:"Sala 05C",k:1},
+          {t:"10:15",l:"Ônibus · UABJ",s:"Rota da manhã · em casa ~10:40"},
+          {t:"12:30",l:"Almoço"},
+          {t:"15:45",l:"Mototáxi"},
           {t:"16:00",l:"Álgebra Linear",s:"Sala 05B",k:1},
-          {t:"18:13",l:"Ônibus · UABJ"},{t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+          {t:"17:45",l:"Pré-treino",s:"no campus"},
+          {t:"18:13",l:"Ônibus · UABJ",s:"Rota 2 · em casa ~18h55"},
+          {t:"19:15",l:"Upper A",s:"~80 min",g:1},
+          {t:"21:00",l:"Jantar = pós-treino"},{t:"22:30",l:"Dormir"}
         ]},
-    3:{ nome:"Quarta", abbr:"Qua", treino:"lowerA", hora:"06:00", nota:"Treino cedo · dia longo",
+    3:{ nome:"Quarta", abbr:"Qua", treino:null, hora:null, nota:"Descanso · aula das 8h às 20h",
         rota:[
-          {t:"05:30",l:"Acordar"},{t:"05:35",l:"1 banana",s:"nada pesado antes das 6h"},
-          {t:"06:00",l:"Lower A",s:"~60 min",g:1},
-          {t:"07:30",l:"Vitamina",s:"pronta na geladeira"},{t:"07:45",l:"Mototáxi"},
+          {t:"06:30",l:"Café da manhã"},{t:"07:50",l:"Chegada · mototáxi"},
           {t:"08:00",l:"Matemática Discreta 2",s:"Sala 01C",k:1},{t:"10:00",l:"Física Geral 2",s:"Sala 05C",k:1},
-          {t:"12:02",l:"Ônibus · UABJ"},{t:"12:45",l:"Almoço"},
+          {t:"12:02",l:"Ônibus · UABJ",s:"em casa ~12h30"},{t:"12:45",l:"Almoço"},
           {t:"14:00",l:"Cálculo 2",s:"Sala 04B",k:1},{t:"16:00",l:"Lanche"},
           {t:"16:33",l:"Ônibus · UABJ",s:"Rota 1"},
           {t:"18:30",l:"Aula Robótica",k:1},
-          {t:"20:00",l:"Jantar"},{t:"22:00",l:"Dormir"}
+          {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
         ]},
-    4:{ nome:"Quinta", abbr:"Qui", treino:"upperB", hora:"13:30", nota:"Tarde inteira livre",
+    4:{ nome:"Quinta", abbr:"Qui", treino:"upperB", hora:"14:00", nota:"Dia mais folgado da semana",
         rota:[
           {t:"06:30",l:"Café da manhã"},{t:"07:50",l:"Chegada · mototáxi"},
           {t:"08:00",l:"Programação 2",s:"UABJ · Laboratório",k:1},{t:"10:00",l:"Inglês 2",s:"Sala 02B",k:1},
-          {t:"12:00",l:"Pré-treino"},
           {t:"12:02",l:"Ônibus · UABJ",s:"em casa ~12h30"},
-          {t:"13:30",l:"Upper B",s:"~80 min",g:1},
-          {t:"15:15",l:"Almoço = pós-treino"},{t:"18:00",l:"Lanche"},
-          {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
+          {t:"12:30",l:"Almoço leve = pré-treino"},
+          {t:"14:00",l:"Upper B",s:"~80 min",g:1},
+          {t:"15:45",l:"Pós-treino"},{t:"18:00",l:"Lanche"},
+          {t:"20:30",l:"Jantar"},{t:"22:00",l:"Dormir"}
         ]},
-    5:{ nome:"Sexta", abbr:"Sex", treino:"lowerB", hora:"06:00", nota:"Dia mais leve · EAD à tarde",
+    5:{ nome:"Sexta", abbr:"Sex", treino:"lowerB", hora:"06:00", nota:"Treino cedo · EAD à tarde",
         rota:[
           {t:"05:30",l:"Acordar"},{t:"05:35",l:"1 banana"},
           {t:"06:00",l:"Lower B",s:"~60 min",g:1},
-          {t:"07:30",l:"Vitamina"},{t:"07:45",l:"Mototáxi"},
+          {t:"07:20",l:"Shaker = café da manhã"},{t:"07:45",l:"Mototáxi"},
           {t:"08:00",l:"Programação 2",s:"AEB · presencial",k:1},
           {t:"10:00",l:"Inglês 2",s:"Virtual",k:1},
           {t:"12:02",l:"Ônibus · UABJ"},{t:"12:45",l:"Almoço"},
@@ -502,9 +505,9 @@ const PLANO = {
     acima:"Ganho acima de 0,5 kg por semana. Corte ~150 kcal ao dia — acima disso o ganho tende a ser gordura."
   },
 
-  onibus:[["12:02","Rota 2 · micro","~12:30"],["16:33","Rota 1 · ônibus","~17:13"],["18:13","Rota 2 · ônibus","~18:55"]],
+  onibus:[["10:15","Rota da manhã","~10:40"],["12:02","Rota 2 · micro","~12:30"],["16:33","Rota 1 · ônibus","~17:13"],["18:13","Rota 2 · ônibus","~18:55"]],
 
-  sono:[["Terça · Quinta","22:30","06:30"],["Quarta · Sexta","22:00","05:30"],["Demais dias","22:30","06:30"]],
+  sono:[["Quinta","22:00","06:30"],["Demais dias","22:30","06:30"]],
 
   sonoRegras:[
     "<b>Acorde no mesmo horário todo dia</b>, inclusive fim de semana. É o fator isolado mais poderoso — dormir até tarde no sábado desregula a semana inteira.",
@@ -1219,7 +1222,7 @@ function renderMais(){
       <tr><th>Dia</th><th>Dormir</th><th>Acordar</th></tr>
       ${PLANO.sono.map(([d,a,b])=>`<tr><td>${d}</td><td class="num">${a}</td><td class="num">${b}</td></tr>`).join("")}
     </table></div>
-    <div class="note alert">Os treinos de quarta e sexta às 6h <strong>só funcionam se o sono estiver resolvido</strong>. Se em 3 semanas você estiver arrastado, corte os treinos da manhã antes de cortar horas de sono.</div>
+    <div class="note alert">O treino de sexta às 6h <strong>só funciona se o sono estiver resolvido</strong>. Se em 3 semanas você estiver arrastado, corte o treino da manhã antes de cortar horas de sono.</div>
     <div class="card"><ul class="rules">${PLANO.sonoRegras.map(r=>`<li>${r}</li>`).join("")}</ul></div>
     <div class="note alert">"Não sentir sono desde pequeno" merece avaliação — pode ser síndrome do atraso de fase do sono, que tem tratamento específico. Um clínico geral ou médico do sono diferencia em uma consulta, e isso vale mais que qualquer suplemento.</div>
 
@@ -1233,8 +1236,8 @@ function renderMais(){
       <tr><td>20 g de pasta de amendoim</td><td class="num muted">120</td></tr>
       <tr><td><b>Total</b></td><td class="num">620</td></tr>
     </table></div>
-    <div class="note">Deixe pronta na geladeira na noite anterior aos treinos das 6h.</div>
-    <div class="note alert">Estimulantes de apetite prescritos têm sedação como efeito principal — o que conflita com o treino às 6h — e o ganho tende a ser gordura. Rode as estratégias acima por 4-6 semanas primeiro; se não resolverem, é conversa para a nutricionista.</div>`;
+    <div class="note">São 620 kcal em 3 minutos, no shaker: resolve o lanche das 9h30 na segunda e o café da manhã depois do treino de sexta.</div>
+    <div class="note alert">Estimulantes de apetite prescritos têm sedação como efeito principal — o que conflita com o treino de sexta às 6h — e o ganho tende a ser gordura. Rode as estratégias acima por 4-6 semanas primeiro; se não resolverem, é conversa para a nutricionista.</div>`;
 }
 
 /* =========================================================

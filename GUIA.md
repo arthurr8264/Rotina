@@ -124,7 +124,7 @@ Mantenha as paradas em ordem crescente de horário — o app usa essa ordem para
 No topo de cada dia:
 
 ```js
-2:{ nome:"Terça", abbr:"Ter", treino:"upperA", hora:"13:15", ... }
+2:{ nome:"Terça", abbr:"Ter", treino:"upperA", hora:"19:15", ... }
 ```
 
 - `treino` — precisa ser `"upperA"`, `"lowerA"`, `"upperB"`, `"lowerB"` ou `null`
