@@ -1,8 +1,10 @@
 # Guia de edição — app Rotina
 
-Tudo que aparece no app vem de um único objeto chamado `PLANO`, que fica no começo da tag `<script>` dentro do `index.html`. Você edita ali e a mudança aparece em todas as telas.
+Tudo que aparece no app vem de um único objeto chamado `PLANO_PADRAO`, que fica no começo da tag `<script>` dentro do `index.html`. Você edita ali e a mudança aparece em todas as telas, para você e para quem usa o app sem ter montado um plano próprio.
 
 **Nenhuma edição exige internet.** Abra o `index.html` no navegador (duplo clique) e recarregue com `Cmd + R` para ver o resultado.
+
+> **Quer dar o app para um colega?** Ele não precisa mexer no código. Veja [Plano próprio, sem editar código](#plano-próprio-sem-editar-código) no fim deste guia.
 
 ---
 
@@ -217,6 +219,59 @@ git push
 ```
 
 O Netlify publica sozinho em ~30 segundos.
+
+---
+
+## Plano próprio, sem editar código
+
+O app serve mais de uma pessoa. Cada aparelho pode ter o seu plano, salvo localmente, sem tocar no `index.html` e sem conta nenhuma.
+
+Na aba **Registro**, seção **Meu plano**:
+
+| Botão | O que faz |
+|---|---|
+| **Copiar plano** | Copia o plano atual em JSON, pronto para colar num editor ou mandar no WhatsApp |
+| **Baixar arquivo** | Salva o mesmo JSON como arquivo, para backup |
+| **Aplicar plano colado** | Lê o texto da caixa e passa a usá-lo |
+| **Abrir arquivo** | O mesmo, a partir de um arquivo salvo |
+| **Voltar ao plano padrão** | Apaga o plano do aparelho e volta ao de fábrica |
+
+### O caminho para um colega
+
+1. Ele abre o app e toca em **Copiar plano** — sai o seu plano, que serve de modelo.
+2. Cola num editor de texto, troca o que é dele: a escala, os treinos, as metas.
+3. Volta ao app, cola na caixa e toca em **Aplicar plano colado**.
+
+As marcações, cargas e pesos dele já eram separados dos seus desde sempre — cada aparelho tem os próprios.
+
+### O que dá para trocar
+
+O plano é um JSON com as mesmas chaves do `PLANO_PADRAO`. **Não precisa mandar tudo**: o que você não incluir continua vindo do padrão. Quem só quer mudar as calorias manda três linhas:
+
+```json
+{ "meta": { "kcal": 2200, "ptn": 130, "cho": 250, "gord": 70, "peso": 70 } }
+```
+
+Quem quer a escala inteira manda `dias` e `treinos` junto. A troca é **por chave inteira**: mandar `dias` substitui os sete dias, então mande os sete, não só a segunda.
+
+Vale a pena trocar: `meta`, `treinos`, `dias`, `refeicoes`, `sono`, `descansoSeg`, `onibus`.
+Não costuma valer: `tecnica`, `sonoRegras`, `apetite`, `ciclo`, `incremento`, `trocas`, `ajustes` — é teoria de treino e dieta, igual para todo mundo.
+
+### Se o plano tiver erro
+
+O app confere antes de aceitar e lista o que está errado em português — horário fora do formato, parada fora de ordem, treino que não existe, chave inventada. Enquanto houver erro, nada é salvo e o plano antigo continua valendo.
+
+Se um plano salvo der problema depois, o app cai sozinho no plano padrão e avisa na aba Registro, em vez de abrir em branco. Para forçar isso à mão, abra o app acrescentando `?padrao=1` no fim do endereço:
+
+```
+https://rotina-arthurrr.netlify.app/?padrao=1
+```
+
+O plano salvo não é apagado — só ignorado nessa abertura, o suficiente para chegar ao botão de corrigir ou apagar.
+
+### Onde isso mora
+
+Só no aparelho, no `localStorage`, junto das marcações e das cargas. Não sobe para lugar nenhum e não sincroniza entre celular e computador. **Quem montou um plano longo deveria baixar o arquivo de vez em quando** — é o único backup que existe.
 
 ---
 

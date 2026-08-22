@@ -21,8 +21,8 @@ Build command vazio, publish directory `.`.
 ## Regras que não devem ser quebradas
 
 1. **Não introduzir build step, bundler, npm ou framework.** O valor do projeto é editar um arquivo e dar push. Se uma sugestão exige `npm install`, ela está errada para este projeto.
-2. **Todo conteúdo vive no objeto `PLANO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo `PLANO`, porque é ali que o dono edita.
-3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v3"` → `"rotina-v4"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
+2. **Todo conteúdo vive no objeto `PLANO_PADRAO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo modelo, porque é ali que o dono edita. As telas leem `PLANO`, que é `PLANO_PADRAO` com o plano do usuário (se houver) por cima.
+3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v8"` → `"rotina-v9"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
 4. **Nada de armazenamento remoto.** Marcações, cargas por exercício e peso corporal ficam em `localStorage`, protegidos por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
 5. **Mobile-first.** Viewport de ~390px é o alvo. Testar mentalmente nessa largura antes de sugerir layout.
 
@@ -30,8 +30,8 @@ Build command vazio, publish directory `.`.
 
 Numerada por seções comentadas dentro do `<script>`:
 
-1. `PLANO` — modelo de dados (treinos, dias, refeições, sono, apetite)
-2. `LOG`, `CARGAS`, `PESO` — persistência em localStorage
+1. `PLANO_PADRAO` — modelo de dados (treinos, dias, refeições, sono, apetite)
+2. `LOG`, `CARGAS`, `PESO`, `PLANO_USUARIO` — persistência em localStorage; no fim da seção, `PLANO` é montado
 3. Utilitários de data, número e o helper `grafico()` (SVG à mão, sem biblioteca)
 4. `renderHoje` — timeline do dia, estilo diagrama de rota de ônibus
 5. `CRON` — cronômetro de descanso, barra fixa e pop-up de fim
@@ -51,6 +51,24 @@ Duas exceções deliberadas, ambas comentadas no código:
 O cronômetro conta pelo **instante de término** (`Date.now() + seg*1000`), nunca decrementando um contador: o navegador congela timers em segundo plano, mas o relógio do aparelho não. Ao voltar para o app, o alarme dispara atrasado em vez de sumir.
 
 Carga é indexada pelo **nome do exercício normalizado** — renomear no `PLANO` começa um histórico novo.
+
+## Plano próprio de cada usuário
+
+O app é usado por mais de uma pessoa, cada uma no seu aparelho. `PLANO_PADRAO` é o plano de fábrica; quem quiser o seu salva um JSON em `localStorage` (`rotina:plano:v1`), e `PLANO` sai da mescla:
+
+```js
+const PLANO = Object.assign({}, PLANO_PADRAO, PLANO_USUARIO.dados());
+```
+
+A mescla é **por chave de primeiro nível**, de propósito: quem salva `dias` troca os sete dias inteiros. Mesclar dia a dia produziria um dia meio do usuário, meio padrão — que não corresponde à rotina de ninguém. Na prática isso deixa quem quiser trocar só `meta` trocar só `meta`.
+
+Três defesas, porque o plano agora vem de fora:
+
+- **`validaPlano()`** roda antes de qualquer plano entrar, na importação e no carregamento. Devolve lista de problemas em português. Não pode depender de nada da seção 3 — roda antes dela existir.
+- **Plano salvo inválido é ignorado**, o app cai no padrão e avisa na aba Registro.
+- **`?padrao=1` na URL** ignora o plano salvo. `boot()` recorre a isso sozinho se o primeiro render quebrar, para o app nunca ficar sem saída.
+
+Ao adicionar chave nova no `PLANO_PADRAO`, considere se ela precisa de regra no `validaPlano()` — chave desconhecida no plano do usuário já é recusada automaticamente.
 
 ## Design
 

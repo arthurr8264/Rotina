@@ -222,6 +222,19 @@ svg.graf .gt{font-family:var(--display);font-size:11px;letter-spacing:.06em;fill
 .resumo.d b{color:var(--line1)}
 .wipe + .wipe{margin-top:8px}
 
+/* meu plano: exportar, colar, importar */
+.acao{appearance:none;cursor:pointer;display:block;width:100%;background:none;border:1px solid var(--edge);border-radius:10px;padding:12px;
+  color:var(--dim);font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;text-align:center}
+.acao:active{color:var(--chalk);border-color:var(--chalk)}
+.acao:focus-visible{outline:2px solid var(--line1);outline-offset:2px}
+.acao + .acao,.acao + .wipe,.cola + .acao{margin-top:8px}
+.cola{display:block;width:100%;min-height:96px;margin-top:8px;resize:vertical;padding:11px;
+  background:var(--ink);border:1px solid var(--edge);border-radius:10px;color:var(--chalk);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.5}
+.cola:focus{outline:none;border-color:var(--line1)}
+.erros{margin:0;padding:0 0 0 18px}
+.erros li{font-size:13px;color:#CBD7E0;padding:3px 0}
+
 /* cronômetro de descanso */
 .timer{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));z-index:55;
   display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;
@@ -288,11 +301,13 @@ body.cronometrando{padding-bottom:calc(var(--nav-h) + 62px + env(safe-area-inset
 
 <script>
 /* =========================================================
-   1. MODELO — fonte única da verdade.
-      Editar aqui muda todas as telas.
+   1. MODELO PADRÃO — o plano que vem de fábrica.
+      Editar aqui muda as telas de quem não montou plano próprio.
+      Quem monta o seu, no aparelho, sobrescreve as chaves de
+      primeiro nível deste objeto (ver seção 2, PLANO_USUARIO).
    ========================================================= */
 
-const PLANO = {
+const PLANO_PADRAO = {
   meta:{ kcal:2600, ptn:148, cho:330, gord:75, peso:56.1 },
 
   /* ---------- TREINOS ----------
@@ -622,6 +637,110 @@ const PESO = (() => {
     apagarTudo(){ dados = []; salvar(); try{ localStorage.removeItem(KEY); }catch(e){} }
   };
 })();
+
+/* Confere um plano vindo de fora antes de deixá-lo entrar.
+   Sem isso, um JSON torto deixa o app em branco e sem saída.
+   Devolve a lista de problemas — vazia quer dizer que passou. */
+function validaPlano(p){
+  if (!p || typeof p !== "object" || Array.isArray(p)) return ["O plano precisa ser um objeto JSON, entre { e }."];
+
+  const erros = [];
+  const conhecidas = Object.keys(PLANO_PADRAO);
+  Object.keys(p).forEach(k => {
+    if (!conhecidas.includes(k)) erros.push(`Chave desconhecida: "${k}". As válidas são ${conhecidas.join(", ")}.`);
+  });
+
+  if ("treinos" in p){
+    if (!p.treinos || typeof p.treinos !== "object" || !Object.keys(p.treinos).length){
+      erros.push("`treinos` precisa ser um objeto com pelo menos um treino.");
+    } else Object.entries(p.treinos).forEach(([id,t])=>{
+      if (!t || typeof t.nome !== "string" || !t.nome.trim()) erros.push(`Treino "${id}": falta o nome.`);
+      if (!Array.isArray(t.ex) || !t.ex.length) erros.push(`Treino "${id}": falta a lista de exercícios.`);
+      else t.ex.forEach((e,i)=>{
+        if (!Array.isArray(e) || typeof e[0] !== "string" || !e[0].trim()) erros.push(`Treino "${id}", exercício ${i+1}: falta o nome.`);
+        else if (typeof e[1] !== "string") erros.push(`Exercício "${e[0]}": falta o "séries x reps".`);
+      });
+    });
+  }
+
+  if ("dias" in p){
+    const treinos = p.treinos || PLANO_PADRAO.treinos;
+    if (!p.dias || typeof p.dias !== "object") erros.push("`dias` precisa ser um objeto com os sete dias.");
+    else for (let d = 0; d < 7; d++){
+      const dia = p.dias[d];
+      if (!dia){ erros.push(`Falta o dia ${d} (0 é domingo, 1 é segunda).`); continue; }
+      if (typeof dia.nome !== "string" || typeof dia.abbr !== "string") erros.push(`Dia ${d}: precisa de "nome" e "abbr".`);
+      if (dia.treino != null && !treinos[dia.treino]) erros.push(`Dia ${d}: o treino "${dia.treino}" não existe na lista de treinos.`);
+      if (!Array.isArray(dia.rota)){ erros.push(`Dia ${d}: "rota" precisa ser uma lista.`); continue; }
+      let ant = -1;
+      dia.rota.forEach((parada,i)=>{
+        const ref = `Dia ${d}, parada ${i+1}`;
+        if (!parada || !/^([01]\d|2[0-3]):[0-5]\d$/.test(parada.t)) { erros.push(`${ref}: "t" precisa ser um horário "HH:MM".`); return; }
+        if (typeof parada.l !== "string" || !parada.l.trim()) erros.push(`${ref}: falta o texto em "l".`);
+        /* sem usar min(), da seção 3: o validador roda antes dela existir */
+        const m = Number(parada.t.slice(0,2)) * 60 + Number(parada.t.slice(3));
+        if (m < ant) erros.push(`${ref} (${parada.t}): as paradas precisam estar em ordem crescente de horário.`);
+        ant = m;
+      });
+    }
+  }
+
+  if ("meta" in p){
+    if (!p.meta || typeof p.meta !== "object") erros.push("`meta` precisa ser um objeto.");
+    else ["kcal","ptn","cho","gord","peso"].forEach(k=>{
+      if (typeof p.meta[k] !== "number" || !Number.isFinite(p.meta[k])) erros.push(`meta.${k} precisa ser um número.`);
+    });
+  }
+
+  return erros;
+}
+
+/* O plano do próprio usuário, montado no aparelho.
+   Sobrescreve o PLANO_PADRAO por chave de primeiro nível: quem
+   salva "dias" troca os sete dias inteiros, e o resto continua
+   vindo do padrão. Nada de mesclar dia a dia — meio plano do
+   usuário com meio plano padrão daria um dia que não existe. */
+const PLANO_USUARIO = (() => {
+  const KEY = "rotina:plano:v1";
+  let dados = null, persiste = true, existe = false, invalido = false;
+
+  /* escotilha de emergência: abrir com ?padrao=1 ignora o plano salvo */
+  let ignorando = false;
+  try { ignorando = new URLSearchParams(location.search).has("padrao"); } catch (e) {}
+
+  try {
+    const cru = localStorage.getItem(KEY);
+    if (cru){
+      existe = true;
+      const obj = JSON.parse(cru);
+      if (validaPlano(obj).length) invalido = true;
+      else if (!ignorando) dados = obj;
+    }
+  } catch (e) { persiste = false; existe = false; }
+
+  return {
+    get persiste(){ return persiste; },
+    get existe(){ return existe; },
+    get ativo(){ return !!dados; },
+    get ignorando(){ return ignorando && existe; },
+    get invalido(){ return invalido; },
+    dados: () => dados,
+    /* devolve a lista de erros; vazia quer dizer que salvou */
+    salvar(obj){
+      const erros = validaPlano(obj);
+      if (erros.length) return erros;
+      if (!persiste) return ["Este navegador está bloqueando o armazenamento local."];
+      try { localStorage.setItem(KEY, JSON.stringify(obj)); }
+      catch (e) { return ["Não foi possível salvar — o armazenamento do navegador está cheio ou bloqueado."]; }
+      dados = obj; existe = true; invalido = false;
+      return [];
+    },
+    apagar(){ dados = null; existe = false; invalido = false; try{ localStorage.removeItem(KEY); }catch(e){} }
+  };
+})();
+
+/* É este objeto que todas as telas leem. */
+const PLANO = Object.assign({}, PLANO_PADRAO, PLANO_USUARIO.dados());
 
 /* =========================================================
    3. UTILITÁRIOS
@@ -1047,6 +1166,9 @@ function renderRegistro(){
     <h2 class="sec">Peso corporal</h2>
     <div id="grafPeso"></div>
 
+    <h2 class="sec">Meu plano</h2>
+    <div id="meuPlano"></div>
+
     <h2 class="sec">Dados</h2>
     <button class="wipe" id="wipe" type="button">Apagar marcações do calendário</button>
     <button class="wipe" id="wipeTreino" type="button">Apagar cargas e pesos</button>
@@ -1069,6 +1191,100 @@ function renderRegistro(){
 
   renderGraficoCarga();
   renderGraficoPeso();
+  renderMeuPlano();
+}
+
+/* ---------- meu plano: exportar, colar, importar ---------- */
+
+function renderMeuPlano(){
+  const alvo = $("#meuPlano");
+  if (!alvo) return;
+
+  const estado = PLANO_USUARIO.ignorando
+      ? `<div class="note alert">O app está aberto no <strong>plano padrão</strong> porque o plano salvo neste aparelho deu erro ao carregar. Corrija o texto e aplique de novo, ou volte ao padrão de vez.</div>`
+    : PLANO_USUARIO.invalido
+      ? `<div class="note alert">Existe um plano salvo neste aparelho, mas ele <strong>não passou na conferência</strong> e foi ignorado. O app está usando o plano padrão.</div>`
+    : PLANO_USUARIO.ativo
+      ? `<div class="note">Você está usando um <strong>plano próprio</strong>, salvo só neste aparelho.</div>`
+      : `<div class="note info">Você está usando o <strong>plano padrão</strong>. Exporte-o para ter um ponto de partida, edite o que for seu e cole de volta aqui.</div>`;
+
+  alvo.innerHTML = `
+    ${estado}
+    <button class="acao" id="planoCopiar" type="button">Copiar plano</button>
+    <button class="acao" id="planoBaixar" type="button">Baixar arquivo</button>
+    <textarea class="cola" id="planoCola" spellcheck="false" placeholder="Cole aqui um plano em JSON" aria-label="Plano em JSON"></textarea>
+    <button class="acao" id="planoAplicar" type="button">Aplicar plano colado</button>
+    <label class="acao" for="planoArquivo">Abrir arquivo</label>
+    <input type="file" id="planoArquivo" accept="application/json,.json" hidden>
+    ${PLANO_USUARIO.existe ? `<button class="wipe" id="planoPadrao" type="button">Voltar ao plano padrão</button>` : ""}
+    <div id="planoAviso"></div>
+    <div class="foot">O plano é um texto em JSON. Mexer nele exige cuidado com vírgulas e aspas — o app confere antes de aceitar e diz o que está errado.</div>`;
+
+  const aviso = $("#planoAviso");
+  const dizer = (texto, tipo="info") => { aviso.innerHTML = `<div class="note ${tipo}">${texto}</div>`; };
+  const listarErros = erros => {
+    aviso.innerHTML = `<div class="note alert"><strong>O plano não foi aplicado.</strong>
+      <ul class="erros">${erros.slice(0,8).map(e=>`<li>${e}</li>`).join("")}</ul>
+      ${erros.length > 8 ? `<span class="muted">e mais ${erros.length-8}.</span>` : ""}</div>`;
+  };
+
+  const texto = () => JSON.stringify(PLANO, null, 2);
+  /* recarrega limpando o ?padrao=1, se estiver na URL */
+  const recarregar = () => { location.href = location.pathname; };
+
+  const aplicar = cru => {
+    let obj;
+    try { obj = JSON.parse(cru); }
+    catch (e) { listarErros([`O texto não é um JSON válido: ${e.message}`]); return; }
+    const erros = PLANO_USUARIO.salvar(obj);
+    if (erros.length) listarErros(erros);
+    else recarregar();
+  };
+
+  $("#planoCopiar").addEventListener("click", ()=>{
+    const cru = texto();
+    try {
+      navigator.clipboard.writeText(cru)
+        .then(()=>dizer("Plano copiado. Cole num editor de texto para trabalhar nele."))
+        .catch(()=>{ $("#planoCola").value = cru; dizer("Não deu para copiar sozinho — o plano está na caixa abaixo, selecione e copie.", "quiet"); });
+    } catch (e) {
+      $("#planoCola").value = cru;
+      dizer("Não deu para copiar sozinho — o plano está na caixa abaixo, selecione e copie.", "quiet");
+    }
+  });
+
+  $("#planoBaixar").addEventListener("click", ()=>{
+    try {
+      const url = URL.createObjectURL(new Blob([texto()], { type:"application/json" }));
+      const a = document.createElement("a");
+      a.href = url; a.download = `plano-${chave(new Date())}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    } catch (e) { dizer("Este navegador não deixou baixar o arquivo. Use o botão de copiar.", "alert"); }
+  });
+
+  $("#planoAplicar").addEventListener("click", ()=>{
+    const cru = $("#planoCola").value.trim();
+    if (!cru){ dizer("Cole um plano na caixa antes de aplicar.", "quiet"); return; }
+    aplicar(cru);
+  });
+
+  $("#planoArquivo").addEventListener("change", e=>{
+    const arq = e.target.files && e.target.files[0];
+    if (!arq) return;
+    const leitor = new FileReader();
+    leitor.onload = () => aplicar(String(leitor.result));
+    leitor.onerror = () => dizer("Não foi possível ler o arquivo.", "alert");
+    leitor.readAsText(arq);
+  });
+
+  const voltar = $("#planoPadrao");
+  if (voltar) voltar.addEventListener("click", ()=>{
+    if (confirm("Voltar ao plano padrão? O plano salvo neste aparelho será apagado. As marcações, cargas e pesos ficam.")){
+      PLANO_USUARIO.apagar();
+      recarregar();
+    }
+  });
 }
 
 /* ---------- gráfico: carga por exercício ---------- */
@@ -1268,8 +1484,20 @@ function boot(){
     `<button data-id="${t.id}" type="button"><svg class="ico" viewBox="0 0 24 24">${t.ico}</svg>${t.rot}</button>`).join("");
   document.querySelectorAll("#nav button").forEach(b=>b.addEventListener("click",()=>ir(b.dataset.id)));
 
-  TELAS.forEach(t=>t.fn());
+  /* Um plano salvo com defeito não pode deixar o app inutilizável:
+     se o primeiro render quebrar, recarrega ignorando o plano do
+     usuário — daí dá para corrigir ou apagar pela aba Registro. */
+  try {
+    TELAS.forEach(t=>t.fn());
+  } catch (erro) {
+    if (PLANO_USUARIO.ativo){ location.search = "?padrao=1"; return; }
+    throw erro;
+  }
   ir("hoje");
+
+  /* pede ao navegador para não descartar o armazenamento — é onde
+     mora o plano inteiro de quem montou o seu. */
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 
   const tick = () => {
     const d = new Date();
