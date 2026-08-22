@@ -226,25 +226,42 @@ O Netlify publica sozinho em ~30 segundos.
 
 O app serve mais de uma pessoa. Cada aparelho pode ter o seu plano, salvo localmente, sem tocar no `index.html` e sem conta nenhuma.
 
-Na aba **Registro**, seção **Meu plano**:
+### O caminho normal: o editor
+
+Na aba **Registro**, seção **Meu plano**, botão **Editar meu plano**. Abre um painel com seis blocos:
+
+| Bloco | O que muda |
+|---|---|
+| **Escala** | Qual treino em cada dia, a que horas, e o recado que aparece no topo da tela |
+| **Metas do dia** | Calorias, macros, peso de referência e o descanso padrão entre séries |
+| **Treinos** | Nome de cada treino e a lista de exercícios: nome, séries×reps, descanso, nome no Hevy e dica |
+| **Rota de cada dia** | A linha do tempo da aba Hoje — horário, texto, segunda linha e se é aula |
+| **Refeições** | Nome, calorias, quando, e os itens (um por linha) |
+| **Sono e transporte** | Horários de dormir e acordar, e os ônibus |
+
+Tudo salva sozinho, a cada campo. O selo no topo diz **Salvo** quando gravou, ou aponta o problema em vermelho — enquanto houver problema, nada é gravado e o plano anterior continua valendo.
+
+**A Escala manda na rota.** Trocar o treino ou o horário de um dia move sozinha a parada do treino na rota daquele dia, e renomear um treino renomeia a parada em todos os dias que o usam. Por isso a parada do treino aparece travada dentro de "Rota de cada dia" — ela vem da Escala.
+
+### Mandar seu plano para alguém
+
+Botão **Criar link para mandar a alguém**: gera um link com o plano dentro dele e copia. É só mandar no WhatsApp. Quem abrir vê um resumo do plano e escolhe se aplica — nunca é aplicado sozinho, porque a pessoa pode já ter montado o dela.
+
+Não existe servidor nesse caminho: o plano viaja dentro do próprio endereço, comprimido. Se o seu plano ficar grande demais para caber num link, o app avisa e manda usar **Copiar plano**.
+
+As marcações, cargas e pesos de cada pessoa já eram separados desde sempre — cada aparelho tem os próprios.
+
+### O caminho manual: JSON
+
+Dentro de **Backup e importação**:
 
 | Botão | O que faz |
 |---|---|
-| **Copiar plano** | Copia o plano atual em JSON, pronto para colar num editor ou mandar no WhatsApp |
-| **Baixar arquivo** | Salva o mesmo JSON como arquivo, para backup |
+| **Copiar plano** | Copia o plano atual em JSON, para colar num editor |
+| **Baixar arquivo** | Salva o JSON como arquivo, para backup |
 | **Aplicar plano colado** | Lê o texto da caixa e passa a usá-lo |
 | **Abrir arquivo** | O mesmo, a partir de um arquivo salvo |
 | **Voltar ao plano padrão** | Apaga o plano do aparelho e volta ao de fábrica |
-
-### O caminho para um colega
-
-1. Ele abre o app e toca em **Copiar plano** — sai o seu plano, que serve de modelo.
-2. Cola num editor de texto, troca o que é dele: a escala, os treinos, as metas.
-3. Volta ao app, cola na caixa e toca em **Aplicar plano colado**.
-
-As marcações, cargas e pesos dele já eram separados dos seus desde sempre — cada aparelho tem os próprios.
-
-### O que dá para trocar
 
 O plano é um JSON com as mesmas chaves do `PLANO_PADRAO`. **Não precisa mandar tudo**: o que você não incluir continua vindo do padrão. Quem só quer mudar as calorias manda três linhas:
 
@@ -252,10 +269,16 @@ O plano é um JSON com as mesmas chaves do `PLANO_PADRAO`. **Não precisa mandar
 { "meta": { "kcal": 2200, "ptn": 130, "cho": 250, "gord": 70, "peso": 70 } }
 ```
 
-Quem quer a escala inteira manda `dias` e `treinos` junto. A troca é **por chave inteira**: mandar `dias` substitui os sete dias, então mande os sete, não só a segunda.
+A troca é **por chave inteira**: mandar `dias` substitui os sete dias, então mande os sete, não só a segunda.
 
-Vale a pena trocar: `meta`, `treinos`, `dias`, `refeicoes`, `sono`, `descansoSeg`, `onibus`.
-Não costuma valer: `tecnica`, `sonoRegras`, `apetite`, `ciclo`, `incremento`, `trocas`, `ajustes` — é teoria de treino e dieta, igual para todo mundo.
+Dá para trocar por aqui: `meta`, `treinos`, `dias`, `refeicoes`, `sono`, `descansoSeg`, `onibus` — os mesmos que o editor mexe.
+E também: `tecnica`, `sonoRegras`, `apetite`, `ciclo`, `incremento`, `trocas`, `ajustes` — teoria de treino e dieta, que o editor não mostra justamente por ser igual para todo mundo.
+
+Nos textos só entram `<em>`, `<b>`, `<strong>` e `<small>`. Qualquer outra marcação é recusada, porque um plano pode chegar de fora.
+
+### A primeira abertura
+
+Quem abre o app pela primeira vez recebe um cartão perguntando se quer usar este plano como está, montar o seu, ou colar um que mandaram. Aparece uma vez só.
 
 ### Se o plano tiver erro
 

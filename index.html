@@ -235,6 +235,45 @@ svg.graf .gt{font-family:var(--display);font-size:11px;letter-spacing:.06em;fill
 .erros{margin:0;padding:0 0 0 18px}
 .erros li{font-size:13px;color:#CBD7E0;padding:3px 0}
 
+/* painel do editor */
+.painel{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:var(--ink)}
+.painel[hidden]{display:none}
+.painel-topo{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:calc(env(safe-area-inset-top) + 14px) var(--pad) 13px;border-bottom:1px solid var(--edge);background:var(--panel)}
+.painel-topo h2{margin:0;font-family:var(--display);font-size:23px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.painel-corpo{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px var(--pad) calc(env(safe-area-inset-bottom) + 40px)}
+
+/* formulários do editor */
+.grupo{background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:13px 14px;margin-bottom:9px}
+.grupo + .grupo{margin-top:0}
+.grupo-tit{font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--chalk);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grupo-tit .abbr{color:var(--line1)}
+.linha{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.linha:last-child{margin-bottom:0}
+.rot{font-family:var(--display);font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin:11px 0 5px}
+.campo{width:100%;min-width:0;height:38px;padding:0 10px;background:var(--ink);border:1px solid var(--edge);border-radius:9px;
+  color:var(--chalk);font-family:var(--body);font-size:14px}
+.campo:focus{outline:none;border-color:var(--line1)}
+.campo.hora,.campo.n{font-family:var(--display);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;text-align:center;padding:0 4px}
+.campo.hora{flex:0 0 84px}
+.campo.n{flex:0 0 74px}
+.campo.mini{font-size:13px}
+select.campo{appearance:none;background-image:none}
+.campo:disabled{color:var(--dimmer);border-style:dashed}
+.txt{min-height:74px;padding:9px 10px;resize:vertical;line-height:1.5;font-size:13.5px}
+.x{appearance:none;cursor:pointer;flex:0 0 auto;width:38px;height:38px;background:none;border:1px solid var(--edge);border-radius:9px;
+  color:var(--dimmer);font-size:15px;line-height:1}
+.x:active{color:var(--signal);border-color:var(--signal)}
+.mais{appearance:none;cursor:pointer;width:100%;margin-top:8px;background:none;border:1px dashed var(--edge);border-radius:9px;padding:10px;
+  color:var(--dim);font-family:var(--display);font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.mais:active{color:var(--line1);border-color:var(--line1)}
+.dica{font-size:12.5px;color:var(--dim);margin:-2px 0 10px;line-height:1.5}
+.selo{position:sticky;top:0;z-index:2;margin:-14px calc(var(--pad) * -1) 12px;padding:9px var(--pad);
+  background:var(--panel-2);border-bottom:1px solid var(--edge);
+  font-family:var(--display);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.selo.ok{color:var(--line1)}
+.selo.ruim{color:var(--signal)}
+
 /* cronômetro de descanso */
 .timer{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));z-index:55;
   display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:10px;
@@ -257,6 +296,12 @@ body.cronometrando{padding-bottom:calc(var(--nav-h) + 62px + env(safe-area-inset
 .alarme-ex{font-size:14px;color:var(--dim);margin-top:8px;min-height:21px}
 .alarme-ok{appearance:none;cursor:pointer;width:100%;margin-top:20px;background:var(--signal);border:none;border-radius:11px;padding:14px;
   color:var(--ink);font-family:var(--display);font-size:15px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+
+/* o convite reaproveita o cartão do alarme, mas não é um alerta:
+   precisa vir depois para vencer a borda vermelha por ordem */
+.convite-card{border-color:var(--line1)}
+.convite-card .alarme-tit{color:var(--line1)}
+#conviteBotoes .acao,#conviteBotoes .wipe{margin-top:9px}
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -294,6 +339,24 @@ body.cronometrando{padding-bottom:calc(var(--nav-h) + 62px + env(safe-area-inset
     <div class="alarme-tit" id="alarmeTit">Descanso terminado</div>
     <div class="alarme-ex" id="alarmeEx"></div>
     <button class="alarme-ok" id="alarmeOk" type="button">Próxima série</button>
+  </div>
+</div>
+
+<!-- editor do plano, boas-vindas e plano recebido por link: também
+     irmãos do <nav>, pelo mesmo motivo do cronômetro. -->
+<div class="painel" id="editor" hidden>
+  <div class="painel-topo">
+    <h2>Meu plano</h2>
+    <button class="bt" id="editorFechar" type="button">Fechar</button>
+  </div>
+  <div class="painel-corpo" id="editorCorpo"></div>
+</div>
+
+<div class="alarme" id="convite" hidden>
+  <div class="alarme-card convite-card">
+    <div class="alarme-tit" id="conviteTit">Bem-vindo</div>
+    <div class="alarme-ex" id="conviteTexto"></div>
+    <div id="conviteBotoes"></div>
   </div>
 </div>
 
@@ -692,6 +755,23 @@ function validaPlano(p){
     });
   }
 
+  /* Os textos do plano vão para a tela como HTML — é o que deixa
+     <em> destacar um item de refeição. Como o plano agora pode vir
+     de um link ou de um arquivo de outra pessoa, só essas quatro
+     etiquetas passam; qualquer outra coisa parecida com marcação é
+     recusada antes de chegar perto da tela. */
+  const perigo = (txt) => {
+    if (/javascript:/i.test(txt) || /\son\w+\s*=/i.test(txt)) return true;
+    return (txt.match(/<\/?\s*[a-zA-Z][^>]*>/g) || []).some(tag =>
+      !/^<\/?\s*(em|b|strong|small)\s*>$/i.test(tag));
+  };
+  const varrer = (valor, caminho) => {
+    if (typeof valor === "string"){ if (perigo(valor)) erros.push(`O texto em "${caminho}" tem marcação que não é permitida. Só <em>, <b>, <strong> e <small> podem entrar.`); }
+    else if (Array.isArray(valor)) valor.forEach((v,i)=>varrer(v, `${caminho}.${i}`));
+    else if (valor && typeof valor === "object") Object.entries(valor).forEach(([k,v])=>varrer(v, `${caminho}.${k}`));
+  };
+  Object.entries(p).forEach(([k,v])=>varrer(v,k));
+
   return erros;
 }
 
@@ -735,12 +815,23 @@ const PLANO_USUARIO = (() => {
       dados = obj; existe = true; invalido = false;
       return [];
     },
+    /* grava uma chave só, preservando as outras que o usuário já tinha.
+       É o que o editor usa: mexer na escala não deve tocar nas metas. */
+    salvarChave(chave, valor){
+      return this.salvar(Object.assign({}, dados || {}, { [chave]: valor }));
+    },
     apagar(){ dados = null; existe = false; invalido = false; try{ localStorage.removeItem(KEY); }catch(e){} }
   };
 })();
 
-/* É este objeto que todas as telas leem. */
-const PLANO = Object.assign({}, PLANO_PADRAO, PLANO_USUARIO.dados());
+/* É este objeto que todas as telas leem. Não é const porque o editor
+   troca o plano em memória e manda as telas se redesenharem, sem
+   recarregar a página no meio de uma edição. */
+let PLANO = Object.assign({}, PLANO_PADRAO, PLANO_USUARIO.dados());
+
+function reconstruirPlano(){
+  PLANO = Object.assign({}, PLANO_PADRAO, PLANO_USUARIO.dados());
+}
 
 /* =========================================================
    3. UTILITÁRIOS
@@ -1206,19 +1297,32 @@ function renderMeuPlano(){
       ? `<div class="note alert">Existe um plano salvo neste aparelho, mas ele <strong>não passou na conferência</strong> e foi ignorado. O app está usando o plano padrão.</div>`
     : PLANO_USUARIO.ativo
       ? `<div class="note">Você está usando um <strong>plano próprio</strong>, salvo só neste aparelho.</div>`
-      : `<div class="note info">Você está usando o <strong>plano padrão</strong>. Exporte-o para ter um ponto de partida, edite o que for seu e cole de volta aqui.</div>`;
+      : `<div class="note info">Você está usando o <strong>plano padrão</strong>. Edite o que for seu — a escala, os treinos, as metas — e ele passa a ser o seu plano, só neste aparelho.</div>`;
 
   alvo.innerHTML = `
     ${estado}
-    <button class="acao" id="planoCopiar" type="button">Copiar plano</button>
-    <button class="acao" id="planoBaixar" type="button">Baixar arquivo</button>
-    <textarea class="cola" id="planoCola" spellcheck="false" placeholder="Cole aqui um plano em JSON" aria-label="Plano em JSON"></textarea>
-    <button class="acao" id="planoAplicar" type="button">Aplicar plano colado</button>
-    <label class="acao" for="planoArquivo">Abrir arquivo</label>
-    <input type="file" id="planoArquivo" accept="application/json,.json" hidden>
-    ${PLANO_USUARIO.existe ? `<button class="wipe" id="planoPadrao" type="button">Voltar ao plano padrão</button>` : ""}
+    <button class="acao" id="planoEditar" type="button">Editar meu plano</button>
+    <button class="acao" id="planoLink" type="button">Criar link para mandar a alguém</button>
     <div id="planoAviso"></div>
-    <div class="foot">O plano é um texto em JSON. Mexer nele exige cuidado com vírgulas e aspas — o app confere antes de aceitar e diz o que está errado.</div>`;
+
+    <details class="fold" id="planoAvancado" style="margin-top:9px">
+      <summary>
+        <span class="idx">JSON</span>
+        <span class="nm">Backup e importação<small>o plano como texto, para guardar ou receber</small></span>
+        <span class="kc">·</span>
+      </summary>
+      <div class="corpo">
+        <button class="acao" id="planoCopiar" type="button">Copiar plano</button>
+        <button class="acao" id="planoBaixar" type="button">Baixar arquivo</button>
+        <textarea class="cola" id="planoCola" spellcheck="false" placeholder="Cole aqui um plano em JSON" aria-label="Plano em JSON"></textarea>
+        <button class="acao" id="planoAplicar" type="button">Aplicar plano colado</button>
+        <label class="acao" for="planoArquivo">Abrir arquivo</label>
+        <input type="file" id="planoArquivo" accept="application/json,.json" hidden>
+        <p class="dica" style="margin-top:10px">Quem montou um plano longo deveria baixar o arquivo de vez em quando — é o único backup que existe.</p>
+      </div>
+    </details>
+
+    ${PLANO_USUARIO.existe ? `<button class="wipe" id="planoPadrao" type="button" style="margin-top:9px">Voltar ao plano padrão</button>` : ""}`;
 
   const aviso = $("#planoAviso");
   const dizer = (texto, tipo="info") => { aviso.innerHTML = `<div class="note ${tipo}">${texto}</div>`; };
@@ -1229,6 +1333,13 @@ function renderMeuPlano(){
   };
 
   const texto = () => JSON.stringify(PLANO, null, 2);
+  /* a caixa mora dentro do bloco recolhido — de nada adianta
+     escrever nela sem abrir o bloco primeiro */
+  const mostrarNaCaixa = valor => {
+    const bloco = $("#planoAvancado");
+    if (bloco) bloco.open = true;
+    $("#planoCola").value = valor;
+  };
   /* recarrega limpando o ?padrao=1, se estiver na URL */
   const recarregar = () => { location.href = location.pathname; };
 
@@ -1241,15 +1352,34 @@ function renderMeuPlano(){
     else recarregar();
   };
 
+  $("#planoEditar").addEventListener("click", abrirEditor);
+
+  $("#planoLink").addEventListener("click", async ()=>{
+    const meu = PLANO_USUARIO.dados();
+    if (!meu){
+      dizer("Você ainda está no plano padrão — quem abrir o app já recebe ele. Monte o seu primeiro, em Editar meu plano.", "quiet");
+      return;
+    }
+    try {
+      const link = `${location.origin}${location.pathname}#plano=${await codificaPlano(meu)}`;
+      if (link.length > 8000){
+        dizer("Seu plano ficou grande demais para caber num link. Use <strong>Copiar plano</strong> ou <strong>Baixar arquivo</strong> para mandar.", "alert");
+        return;
+      }
+      try { await navigator.clipboard.writeText(link); dizer(`Link copiado (${link.length} caracteres). Quem abrir vê o plano e escolhe se aplica.`, "info"); }
+      catch (e) { mostrarNaCaixa(link); dizer("O link está na caixa em Backup e importação — selecione e copie.", "quiet"); }
+    } catch (e) { dizer("Não foi possível montar o link neste navegador.", "alert"); }
+  });
+
   $("#planoCopiar").addEventListener("click", ()=>{
     const cru = texto();
     try {
       navigator.clipboard.writeText(cru)
         .then(()=>dizer("Plano copiado. Cole num editor de texto para trabalhar nele."))
-        .catch(()=>{ $("#planoCola").value = cru; dizer("Não deu para copiar sozinho — o plano está na caixa abaixo, selecione e copie.", "quiet"); });
+        .catch(()=>{ mostrarNaCaixa(cru); dizer("Não deu para copiar sozinho — o plano está na caixa acima, selecione e copie.", "quiet"); });
     } catch (e) {
-      $("#planoCola").value = cru;
-      dizer("Não deu para copiar sozinho — o plano está na caixa abaixo, selecione e copie.", "quiet");
+      mostrarNaCaixa(cru);
+      dizer("Não deu para copiar sozinho — o plano está na caixa em Backup e importação, selecione e copie.", "quiet");
     }
   });
 
@@ -1458,7 +1588,500 @@ function renderMais(){
 }
 
 /* =========================================================
-   10. NAVEGAÇÃO
+   10. EDITOR DO PLANO
+   Painel de tela cheia, irmão do <nav>. Trabalha num rascunho —
+   cópia profunda do plano em vigor — e grava a cada alteração.
+   ========================================================= */
+
+/* as chaves que o editor mexe. O resto do PLANO é teoria de treino
+   e dieta, igual para todo mundo, e só muda colando um plano. */
+const CHAVES_EDITAVEIS = ["meta","descansoSeg","treinos","dias","refeicoes","sono","onibus"];
+
+const DIAS_SEMANA = [1,2,3,4,5,6,0];
+
+let rascunho = null;
+
+const escapa = s => String(s == null ? "" : s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function porCaminho(obj, caminho){
+  const partes = caminho.split(".");
+  let alvo = obj;
+  for (let i = 0; i < partes.length - 1; i++) alvo = alvo[partes[i]];
+  return { alvo, ultima: partes[partes.length-1] };
+}
+
+/* --- pedaços de formulário --- */
+
+function campo(caminho, valor, o = {}){
+  const attrs = [
+    `class="campo ${o.classe||""}"`,
+    `data-caminho="${caminho}"`,
+    o.estrutural ? `data-estrutural="1"` : "",
+    o.num ? `data-num="1" inputmode="decimal"` : "",
+    o.lista ? `data-lista="1"` : "",
+    `type="${o.hora ? "time" : "text"}"`,
+    `value="${escapa(valor)}"`,
+    o.ph ? `placeholder="${escapa(o.ph)}"` : "",
+    `aria-label="${escapa(o.aria || o.ph || caminho)}"`,
+    o.desabilitado ? "disabled" : ""
+  ];
+  return `<input ${attrs.filter(Boolean).join(" ")}>`;
+}
+
+function area(caminho, linhas, aria){
+  return `<textarea class="campo txt" data-caminho="${caminho}" data-lista="1" spellcheck="false"
+    aria-label="${escapa(aria)}">${escapa((linhas||[]).join("\n"))}</textarea>`;
+}
+
+function botaoX(acao, dados){
+  const attrs = Object.entries(dados).map(([k,v])=>`data-${k}="${escapa(v)}"`).join(" ");
+  return `<button class="x" type="button" data-acao="${acao}" ${attrs} aria-label="Remover">✕</button>`;
+}
+
+function botaoMais(acao, texto, dados = {}){
+  const attrs = Object.entries(dados).map(([k,v])=>`data-${k}="${escapa(v)}"`).join(" ");
+  return `<button class="mais" type="button" data-acao="${acao}" ${attrs}>${texto}</button>`;
+}
+
+function bloco(idx, titulo, sub, conta, corpo){
+  return `<details class="fold">
+    <summary>
+      <span class="idx">${idx}</span>
+      <span class="nm">${titulo}<small>${sub}</small></span>
+      <span class="kc">${conta}</span>
+    </summary>
+    <div class="corpo">${corpo}</div>
+  </details>`;
+}
+
+/* --- as seções --- */
+
+function secaoEscala(){
+  const opcoes = id => [`<option value="" ${!id?"selected":""}>Descanso</option>`]
+    .concat(Object.entries(rascunho.treinos).map(([tid,t]) =>
+      `<option value="${escapa(tid)}" ${tid===id?"selected":""}>${escapa(t.nome)}</option>`)).join("");
+
+  const dias = DIAS_SEMANA.map(d=>{
+    const dia = rascunho.dias[d];
+    return `<div class="grupo">
+      <div class="grupo-tit"><span>${escapa(dia.nome)}</span><span class="abbr">${escapa(dia.abbr)}</span></div>
+      <div class="linha">
+        <select class="campo" data-caminho="dias.${d}.treino" data-estrutural="1" data-nulo="1" aria-label="Treino de ${escapa(dia.nome)}">${opcoes(dia.treino)}</select>
+        ${campo(`dias.${d}.hora`, dia.hora || "", { hora:1, classe:"hora", estrutural:1, desabilitado:!dia.treino, aria:`Horário do treino de ${dia.nome}` })}
+      </div>
+      ${campo(`dias.${d}.nota`, dia.nota, { classe:"mini", ph:"Recado do dia", aria:`Recado de ${dia.nome}` })}
+    </div>`;
+  }).join("");
+
+  const treinando = DIAS_SEMANA.filter(d=>rascunho.dias[d].treino).length;
+  return bloco("1", "Escala", "que treino em cada dia", `${treinando}×`,
+    `<p class="dica">Trocar o treino ou o horário aqui move sozinho a parada do treino na rota daquele dia.</p>${dias}`);
+}
+
+function secaoMetas(){
+  const m = rascunho.meta;
+  const linha = (rot, chave, ph) => `<div class="rot">${rot}</div>${campo(`meta.${chave}`, m[chave], { num:1, classe:"n", ph })}`;
+  return bloco("2", "Metas do dia", "calorias e macros", `${m.kcal}`,
+    `<div class="linha">${linha("kcal","kcal")}</div>
+     <div class="linha" style="gap:14px">
+       <div>${linha("ptn g","ptn")}</div><div>${linha("cho g","cho")}</div><div>${linha("gord g","gord")}</div>
+     </div>
+     <div class="rot">Peso de referência (kg)</div>
+     ${campo("meta.peso", m.peso, { num:1, classe:"n" })}
+     <p class="dica">O peso aqui só vale enquanto não houver pesagem registrada na aba Registro.</p>
+     <div class="rot">Descanso padrão entre séries (segundos)</div>
+     ${campo("descansoSeg", rascunho.descansoSeg, { num:1, classe:"n" })}`);
+}
+
+function secaoTreinos(){
+  const treinos = Object.entries(rascunho.treinos).map(([id,t])=>{
+    const exs = t.ex.map((e,i)=>`
+      <div class="linha">
+        ${campo(`treinos.${id}.ex.${i}.0`, e[0], { ph:"Nome do exercício" })}
+        ${botaoX("rm-ex", { id, i })}
+      </div>
+      <div class="linha">
+        ${campo(`treinos.${id}.ex.${i}.1`, e[1], { classe:"n", ph:"3 x 10", aria:"Séries x reps" })}
+        ${campo(`treinos.${id}.ex.${i}.4`, e[4] == null ? "" : e[4], { num:1, classe:"n", ph:"seg", aria:"Descanso em segundos" })}
+        ${campo(`treinos.${id}.ex.${i}.2`, e[2] || "", { classe:"mini", ph:"Nome no Hevy", aria:"Nome no Hevy" })}
+      </div>
+      <div class="linha" style="margin-bottom:13px">
+        ${campo(`treinos.${id}.ex.${i}.3`, e[3] || "", { classe:"mini", ph:"Dica (opcional)", aria:"Dica" })}
+      </div>`).join("");
+
+    return `<div class="grupo">
+      <div class="grupo-tit"><span>${escapa(t.nome)}</span>${botaoX("rm-treino", { id })}</div>
+      <div class="linha">${campo(`treinos.${id}.nome`, t.nome, { ph:"Nome do treino", estrutural:1 })}</div>
+      <div class="linha">
+        ${campo(`treinos.${id}.nota`, t.nota || "", { classe:"mini", ph:"Ênfase" })}
+        ${campo(`treinos.${id}.dur`, t.dur || "", { classe:"n", ph:"~60 min", aria:"Duração", estrutural:1 })}
+      </div>
+      <div class="rot">Exercícios</div>
+      <p class="dica">Por exercício: nome · séries × reps · descanso em segundos · nome no Hevy · dica.</p>
+      ${exs}
+      ${botaoMais("add-ex", "Adicionar exercício", { id })}
+    </div>`;
+  }).join("");
+
+  return bloco("3", "Treinos", "exercícios, séries e descanso", `${Object.keys(rascunho.treinos).length}`,
+    `${treinos}${botaoMais("add-treino", "Adicionar treino")}`);
+}
+
+function secaoRotas(){
+  const dias = DIAS_SEMANA.map(d=>{
+    const dia = rascunho.dias[d];
+    const paradas = dia.rota.map((p,i)=>{
+      if (p.g) return `<div class="linha">
+        ${campo(`dias.${d}.rota.${i}.t`, p.t, { hora:1, classe:"hora", desabilitado:1, aria:"Horário do treino" })}
+        ${campo(`dias.${d}.rota.${i}.l`, p.l, { desabilitado:1, aria:"Treino" })}
+      </div>
+      <p class="dica">Esta parada vem da Escala — mude por lá.</p>`;
+      return `<div class="linha">
+        ${campo(`dias.${d}.rota.${i}.t`, p.t, { hora:1, classe:"hora", estrutural:1, aria:"Horário" })}
+        ${campo(`dias.${d}.rota.${i}.l`, p.l, { ph:"O que acontece" })}
+        ${botaoX("rm-parada", { d, i })}
+      </div>
+      <div class="linha" style="margin-bottom:13px">
+        ${campo(`dias.${d}.rota.${i}.s`, p.s || "", { classe:"mini", ph:"Segunda linha (opcional)" })}
+        <select class="campo" style="flex:0 0 104px" data-caminho="dias.${d}.rota.${i}.k" data-num="1" aria-label="Tipo da parada">
+          <option value="" ${!p.k?"selected":""}>Comum</option>
+          <option value="1" ${p.k?"selected":""}>Aula</option>
+        </select>
+      </div>`;
+    }).join("");
+
+    return `<div class="grupo">
+      <div class="grupo-tit"><span>${escapa(dia.nome)}</span><span class="abbr">${dia.rota.length}</span></div>
+      ${paradas}
+      ${botaoMais("add-parada", "Adicionar parada", { d })}
+    </div>`;
+  }).join("");
+
+  return bloco("4", "Rota de cada dia", "a linha do tempo da aba Hoje", "7",
+    `<p class="dica">As paradas se reordenam sozinhas pelo horário.</p>${dias}`);
+}
+
+function secaoRefeicoes(){
+  const refs = rascunho.refeicoes.map((r,i)=>`
+    <div class="grupo">
+      <div class="grupo-tit"><span>${escapa(r.nome)}</span>${botaoX("rm-refeicao", { i })}</div>
+      <div class="linha">
+        ${campo(`refeicoes.${i}.nome`, r.nome, { ph:"Nome da refeição", estrutural:1 })}
+        ${campo(`refeicoes.${i}.kcal`, r.kcal, { num:1, classe:"n", ph:"kcal", aria:"Calorias" })}
+      </div>
+      <div class="linha">${campo(`refeicoes.${i}.quando`, r.quando || "", { classe:"mini", ph:"Quando (opcional)" })}</div>
+      <div class="rot">Itens — um por linha</div>
+      ${area(`refeicoes.${i}.itens`, r.itens, `Itens de ${r.nome}`)}
+    </div>`).join("");
+
+  const total = rascunho.refeicoes.reduce((s,r)=>s + (Number(r.kcal)||0), 0);
+  return bloco("5", "Refeições", `somam ${total} kcal`, `${rascunho.refeicoes.length}`,
+    `${refs}${botaoMais("add-refeicao", "Adicionar refeição")}`);
+}
+
+function secaoSono(){
+  const linhas = rascunho.sono.map((s,i)=>`
+    <div class="linha">
+      ${campo(`sono.${i}.0`, s[0], { ph:"Quais dias" })}
+      ${botaoX("rm-sono", { i })}
+    </div>
+    <div class="linha" style="margin-bottom:13px">
+      ${campo(`sono.${i}.1`, s[1], { hora:1, classe:"hora", aria:"Dormir" })}
+      ${campo(`sono.${i}.2`, s[2], { hora:1, classe:"hora", aria:"Acordar" })}
+    </div>`).join("");
+
+  const onibus = rascunho.onibus.map((o,i)=>`
+    <div class="linha">
+      ${campo(`onibus.${i}.0`, o[0], { hora:1, classe:"hora", aria:"Saída" })}
+      ${campo(`onibus.${i}.1`, o[1], { classe:"mini", ph:"Rota" })}
+      ${botaoX("rm-onibus", { i })}
+    </div>
+    <div class="linha" style="margin-bottom:13px">
+      ${campo(`onibus.${i}.2`, o[2], { classe:"mini", ph:"Chega em casa" })}
+    </div>`).join("");
+
+  return bloco("6", "Sono e transporte", "horários de dormir e ônibus", `${rascunho.sono.length + rascunho.onibus.length}`,
+    `<div class="grupo"><div class="grupo-tit"><span>Sono</span></div>${linhas}${botaoMais("add-sono","Adicionar linha")}</div>
+     <div class="grupo"><div class="grupo-tit"><span>Ônibus</span></div>${onibus}${botaoMais("add-onibus","Adicionar ônibus")}</div>`);
+}
+
+/* --- montagem e salvamento --- */
+
+/* o selo vive fora do render porque o editor é reconstruído inteiro
+   a cada mudança estrutural — sem isso o "Salvo" some no mesmo quadro */
+let seloEstado = { texto:"Alterações salvas automaticamente", tipo:"" };
+
+function renderEditor(){
+  const corpo = $("#editorCorpo");
+  /* guarda o que estava aberto e onde estava a rolagem: o editor é
+     reconstruído por inteiro a cada mudança estrutural. */
+  const abertos = [...corpo.querySelectorAll("details")].map(d=>d.open);
+  const rolagem = corpo.scrollTop;
+
+  corpo.innerHTML = `
+    <div class="selo ${seloEstado.tipo}" id="editorSelo">${escapa(seloEstado.texto)}</div>
+    ${secaoEscala()}${secaoMetas()}${secaoTreinos()}${secaoRotas()}${secaoRefeicoes()}${secaoSono()}
+    <div class="foot">O que não está aqui — técnica, regras de sono, apetite, trocas — é teoria igual para todo mundo,
+    e só muda colando um plano inteiro na aba Registro.</div>`;
+
+  corpo.querySelectorAll("details").forEach((d,i)=>{ if (abertos[i]) d.open = true; });
+  corpo.scrollTop = rolagem;
+}
+
+function selo(texto, tipo){
+  seloEstado = { texto, tipo: tipo || "" };
+  const el = $("#editorSelo");
+  if (el){ el.className = `selo ${seloEstado.tipo}`; el.textContent = texto; }
+}
+
+function salvarRascunho(){
+  const erros = validaPlano(rascunho);
+  if (erros.length){ selo(erros[0], "ruim"); return false; }
+
+  /* guarda só o que difere do padrão — quem mexeu só nas metas
+     fica com um plano de três linhas, fácil de mandar para alguém. */
+  const plano = Object.assign({}, PLANO_USUARIO.dados() || {});
+  CHAVES_EDITAVEIS.forEach(k=>{
+    if (JSON.stringify(rascunho[k]) === JSON.stringify(PLANO_PADRAO[k])) delete plano[k];
+    else plano[k] = rascunho[k];
+  });
+
+  if (!Object.keys(plano).length){
+    PLANO_USUARIO.apagar();
+    selo("De volta ao plano padrão", "ok");
+  } else {
+    const problemas = PLANO_USUARIO.salvar(plano);
+    if (problemas.length){ selo(problemas[0], "ruim"); return false; }
+    selo("Salvo", "ok");
+  }
+
+  reconstruirPlano();
+  TELAS.forEach(t=>t.fn());
+  return true;
+}
+
+/* mantém a parada do treino na rota igual ao que a escala diz */
+function sincronizaRota(d){
+  const dia = rascunho.dias[d];
+  dia.rota = dia.rota.filter(p=>!p.g);
+  if (!dia.treino){ dia.hora = null; return; }
+  if (!dia.hora) dia.hora = "06:00";
+  const t = rascunho.treinos[dia.treino];
+  dia.rota.push({ t:dia.hora, l:t.nome, s:t.dur || "", g:1 });
+  dia.rota.sort((a,b)=>min(a.t) - min(b.t));
+}
+
+function abrirEditor(){
+  if (!PLANO_USUARIO.persiste){
+    alert("Este navegador está bloqueando o armazenamento local, então não dá para salvar um plano neste aparelho.");
+    return;
+  }
+  rascunho = JSON.parse(JSON.stringify(PLANO));
+  $("#editor").hidden = false;
+  document.body.style.overflow = "hidden";
+  renderEditor();
+}
+
+function fecharEditor(){
+  $("#editor").hidden = true;
+  document.body.style.overflow = "";
+  rascunho = null;
+  renderRegistro();
+}
+
+function ligarEditor(){
+  const corpo = $("#editorCorpo");
+
+  corpo.addEventListener("change", e=>{
+    const el = e.target.closest("[data-caminho]");
+    if (!el || !rascunho) return;
+
+    let valor = el.value;
+    if (el.dataset.lista) valor = valor.split("\n").map(l=>l.trim()).filter(Boolean);
+    else if (el.dataset.num) valor = valor.trim() === "" ? null : Number(String(valor).replace(",","."));
+    else valor = String(valor);
+
+    const { alvo, ultima } = porCaminho(rascunho, el.dataset.caminho);
+    /* campo opcional vazio some do plano; "treino" e "hora" guardam
+       null, que é como o modelo escreve "dia de descanso". */
+    if (valor === null || valor === "") {
+      if (el.dataset.nulo) alvo[ultima] = null; else delete alvo[ultima];
+    } else alvo[ultima] = valor;
+
+    if (el.dataset.estrutural){
+      const partes = el.dataset.caminho.split(".");
+      /* renomear um treino tem que renomear a parada dele em todo dia
+         que o usa, senão a rota fica falando do treino antigo. */
+      if (partes[0] === "treinos") DIAS_SEMANA.forEach(sincronizaRota);
+      if (partes[0] === "dias"){
+        sincronizaRota(partes[1]);
+        if (partes[2] === "rota") rascunho.dias[partes[1]].rota.sort((a,b)=>min(a.t)-min(b.t));
+      }
+      if (salvarRascunho()) renderEditor();
+      return;
+    }
+    salvarRascunho();
+  });
+
+  corpo.addEventListener("click", e=>{
+    const bt = e.target.closest("[data-acao]");
+    if (!bt || !rascunho) return;
+    const { acao, id, i, d } = bt.dataset;
+
+    if (acao === "add-ex") rascunho.treinos[id].ex.push(["Novo exercício","3 x 10",""]);
+    if (acao === "rm-ex") rascunho.treinos[id].ex.splice(Number(i),1);
+    if (acao === "add-treino"){
+      let n = 1; while (rascunho.treinos["treino"+n]) n++;
+      rascunho.treinos["treino"+n] = { nome:"Treino "+n, nota:"", dur:"~60 min", ex:[["Novo exercício","3 x 10",""]] };
+    }
+    if (acao === "rm-treino"){
+      const usado = DIAS_SEMANA.filter(dd=>rascunho.dias[dd].treino === id).map(dd=>rascunho.dias[dd].nome);
+      if (usado.length){ selo(`"${rascunho.treinos[id].nome}" está na escala de ${usado.join(", ")}. Tire-o da escala primeiro.`, "ruim"); return; }
+      if (Object.keys(rascunho.treinos).length === 1){ selo("Precisa sobrar pelo menos um treino.", "ruim"); return; }
+      delete rascunho.treinos[id];
+    }
+    if (acao === "add-parada"){
+      rascunho.dias[d].rota.push({ t:"12:00", l:"Nova parada" });
+      rascunho.dias[d].rota.sort((a,b)=>min(a.t)-min(b.t));
+    }
+    if (acao === "rm-parada"){
+      const dia = rascunho.dias[d];
+      if (dia.rota[Number(i)].g){ selo("A parada do treino sai tirando o treino da escala.", "ruim"); return; }
+      dia.rota.splice(Number(i),1);
+    }
+    if (acao === "add-refeicao") rascunho.refeicoes.push({ n:rascunho.refeicoes.length+1, nome:"Nova refeição", kcal:300, quando:"", itens:["Item"] });
+    if (acao === "rm-refeicao") rascunho.refeicoes.splice(Number(i),1);
+    if (acao === "add-sono") rascunho.sono.push(["Dias","22:30","06:30"]);
+    if (acao === "rm-sono") rascunho.sono.splice(Number(i),1);
+    if (acao === "add-onibus") rascunho.onibus.push(["12:00","Rota","~12:30"]);
+    if (acao === "rm-onibus") rascunho.onibus.splice(Number(i),1);
+
+    if (salvarRascunho()) renderEditor();
+  });
+
+  $("#editorFechar").addEventListener("click", fecharEditor);
+}
+
+/* =========================================================
+   11. COMPARTILHAR E RECEBER PLANO
+   O plano viaja no # do endereço, comprimido quando o navegador
+   sabe: nada de servidor, e o link cabe numa mensagem.
+   ========================================================= */
+
+function paraBase64(bytes){
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i+8192));
+  return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function deBase64(txt){
+  const b = txt.replace(/-/g,"+").replace(/_/g,"/");
+  const bin = atob(b + "=".repeat((4 - b.length % 4) % 4));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function codificaPlano(obj){
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  if (typeof CompressionStream === "function"){
+    try {
+      const cs = new CompressionStream("gzip");
+      const w = cs.writable.getWriter(); w.write(bytes); w.close();
+      return "g" + paraBase64(new Uint8Array(await new Response(cs.readable).arrayBuffer()));
+    } catch (e) {}
+  }
+  return "p" + paraBase64(bytes);
+}
+
+async function decodificaPlano(carga){
+  const bytes = deBase64(carga.slice(1));
+  if (carga[0] === "g"){
+    const ds = new DecompressionStream("gzip");
+    const w = ds.writable.getWriter(); w.write(bytes); w.close();
+    return JSON.parse(new TextDecoder().decode(new Uint8Array(await new Response(ds.readable).arrayBuffer())));
+  }
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+function resumoPlano(p){
+  const partes = [];
+  if (p.treinos) partes.push(`${Object.keys(p.treinos).length} treinos`);
+  if (p.dias) partes.push(`${DIAS_SEMANA.filter(d=>p.dias[d] && p.dias[d].treino).length} dias de treino`);
+  if (p.meta) partes.push(`${p.meta.kcal} kcal`);
+  if (p.refeicoes) partes.push(`${p.refeicoes.length} refeições`);
+  return partes.length ? partes.join(" · ") : "algumas mudanças";
+}
+
+/* --- o cartão de boas-vindas / plano recebido --- */
+
+function mostrarConvite(titulo, texto, botoes){
+  $("#conviteTit").textContent = titulo;
+  $("#conviteTexto").innerHTML = texto;
+  $("#conviteBotoes").innerHTML = botoes.map((b,i)=>
+    `<button class="${b.perigo?"wipe":"acao"}" type="button" data-i="${i}">${b.rot}</button>`).join("");
+  $("#conviteBotoes").querySelectorAll("button").forEach((el,i)=>
+    el.addEventListener("click", ()=>{ fecharConvite(); botoes[i].fn(); }));
+  $("#convite").hidden = false;
+}
+const fecharConvite = () => { $("#convite").hidden = true; };
+
+const VISTO = "rotina:visto:v1";
+const jaVisto = () => { try { return !!localStorage.getItem(VISTO); } catch(e){ return true; } };
+const marcarVisto = () => { try { localStorage.setItem(VISTO,"1"); } catch(e){} };
+
+function boasVindas(){
+  mostrarConvite("Bem-vindo",
+    "Este é um plano de exemplo — escala de treino, dieta e rotina de um estudante. Você pode usar como está ou trocar tudo pelo seu.",
+    [
+      { rot:"Usar este plano", fn:()=>{} },
+      { rot:"Montar o meu plano", fn:()=>{ ir("registro"); abrirEditor(); } },
+      { rot:"Colar um plano que me mandaram", fn:()=>{
+          ir("registro");
+          const bloco = $("#planoAvancado"), caixa = $("#planoCola");
+          if (bloco) bloco.open = true;
+          if (caixa){ caixa.scrollIntoView({ block:"center" }); caixa.focus(); }
+        } }
+    ]);
+  marcarVisto();
+}
+
+/* plano vindo de link é conteúdo de fora: confere, resume e pergunta.
+   Nunca aplica sozinho — do outro lado pode haver um plano já montado. */
+async function planoDoEndereco(){
+  const hash = location.hash || "";
+  if (!hash.startsWith("#plano=")) return false;
+  history.replaceState(null, "", location.pathname);
+
+  let obj;
+  try { obj = await decodificaPlano(decodeURIComponent(hash.slice(7))); }
+  catch (e) { obj = null; }
+
+  if (!obj){
+    mostrarConvite("Link inválido", "O link que você abriu não trazia um plano legível. Peça para mandarem de novo.", [{ rot:"Fechar", fn:()=>{} }]);
+    return true;
+  }
+  const erros = validaPlano(obj);
+  if (erros.length){
+    mostrarConvite("Plano com problema",
+      `O plano deste link não passou na conferência:<br><br>${escapa(erros[0])}`, [{ rot:"Fechar", fn:()=>{} }]);
+    return true;
+  }
+
+  const aviso = PLANO_USUARIO.existe
+    ? "<br><br><strong>Isto substitui o plano que já está neste aparelho.</strong> Suas marcações, cargas e pesos ficam."
+    : "";
+  mostrarConvite("Plano compartilhado",
+    `Alguém mandou um plano: <strong>${escapa(resumoPlano(obj))}</strong>.${aviso}`,
+    [
+      { rot:"Aplicar este plano", fn:()=>{ if (!PLANO_USUARIO.salvar(obj).length){ marcarVisto(); location.href = location.pathname; } } },
+      { rot:"Manter o meu", fn:()=>{ marcarVisto(); }, perigo:1 }
+    ]);
+  return true;
+}
+
+/* =========================================================
+   12. NAVEGAÇÃO
    ========================================================= */
 
 const TELAS = [
@@ -1517,6 +2140,15 @@ function boot(){
   document.addEventListener("visibilitychange", ()=>{ if (!document.hidden) CRON.revisa(); });
   window.addEventListener("focus", ()=>CRON.revisa());
   window.__cron = CRON;   /* atalho para testar o alarme pelo console */
+
+  /* editor, plano vindo de link e primeira abertura */
+  ligarEditor();
+  planoDoEndereco().then(veioPeloLink=>{
+    if (!veioPeloLink && !jaVisto() && !PLANO_USUARIO.existe) boasVindas();
+  });
+  /* com o app já aberto na tela inicial, tocar num link de plano só
+     troca o # — não recarrega nada. Sem isto, o link não faria nada. */
+  window.addEventListener("hashchange", ()=>{ planoDoEndereco(); });
 
   /* offline — só funciona em https (Netlify) ou localhost, não em file:// */
   if ("serviceWorker" in navigator) {
