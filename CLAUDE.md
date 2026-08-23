@@ -22,7 +22,7 @@ Build command vazio, publish directory `.`.
 
 1. **Não introduzir build step, bundler, npm ou framework.** O valor do projeto é editar um arquivo e dar push. Se uma sugestão exige `npm install`, ela está errada para este projeto.
 2. **Todo conteúdo vive no objeto `PLANO_PADRAO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo modelo, porque é ali que o dono edita. As telas leem `PLANO`, que é `PLANO_PADRAO` com o plano do usuário (se houver) por cima.
-3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v9"` → `"rotina-v10"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
+3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v10"` → `"rotina-v11"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
 4. **Nada de armazenamento remoto.** Marcações, cargas por exercício e peso corporal ficam em `localStorage`, protegidos por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
 5. **Mobile-first.** Viewport de ~390px é o alvo. Testar mentalmente nessa largura antes de sugerir layout.
 

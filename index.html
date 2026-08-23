@@ -268,6 +268,7 @@ select.campo{appearance:none;background-image:none}
   color:var(--dim);font-family:var(--display);font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
 .mais:active{color:var(--line1);border-color:var(--line1)}
 .dica{font-size:12.5px;color:var(--dim);margin:-2px 0 10px;line-height:1.5}
+.dica b{color:var(--chalk);font-weight:600}
 .selo{position:sticky;top:0;z-index:2;margin:-14px calc(var(--pad) * -1) 12px;padding:9px var(--pad);
   background:var(--panel-2);border-bottom:1px solid var(--edge);
   font-family:var(--display);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
@@ -1684,9 +1685,11 @@ function secaoMetas(){
   const linha = (rot, chave, ph) => `<div class="rot">${rot}</div>${campo(`meta.${chave}`, m[chave], { num:1, classe:"n", ph })}`;
   return bloco("2", "Metas do dia", "calorias e macros", `${m.kcal}`,
     `<div class="linha">${linha("kcal","kcal")}</div>
+     <p class="dica">Total de calorias do dia.</p>
      <div class="linha" style="gap:14px">
        <div>${linha("ptn g","ptn")}</div><div>${linha("cho g","cho")}</div><div>${linha("gord g","gord")}</div>
      </div>
+     <p class="dica"><b>PTN</b> é proteína, <b>CHO</b> é carboidrato e <b>GORD</b> é gordura — as três em gramas por dia.</p>
      <div class="rot">Peso de referência (kg)</div>
      ${campo("meta.peso", m.peso, { num:1, classe:"n" })}
      <p class="dica">O peso aqui só vale enquanto não houver pesagem registrada na aba Registro.</p>
