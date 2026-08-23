@@ -22,7 +22,7 @@ Build command vazio, publish directory `.`.
 
 1. **Não introduzir build step, bundler, npm ou framework.** O valor do projeto é editar um arquivo e dar push. Se uma sugestão exige `npm install`, ela está errada para este projeto.
 2. **Todo conteúdo vive no objeto `PLANO_PADRAO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo modelo, porque é ali que o dono edita. As telas leem `PLANO`, que é `PLANO_PADRAO` com o plano do usuário (se houver) por cima.
-3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v10"` → `"rotina-v11"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
+3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v11"` → `"rotina-v12"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
 4. **Nada de armazenamento remoto.** Marcações, cargas por exercício e peso corporal ficam em `localStorage`, protegidos por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
 5. **Mobile-first.** Viewport de ~390px é o alvo. Testar mentalmente nessa largura antes de sugerir layout.
 
@@ -33,7 +33,7 @@ Numerada por seções comentadas dentro do `<script>`:
 1. `PLANO_PADRAO` — modelo de dados (treinos, dias, refeições, sono, apetite)
 2. `LOG`, `CARGAS`, `PESO`, `PLANO_USUARIO` — persistência em localStorage; no fim da seção, `PLANO` é montado
 3. Utilitários de data, número e o helper `grafico()` (SVG à mão, sem biblioteca)
-4. `renderHoje` — timeline do dia, estilo diagrama de rota de ônibus
+4. `renderHoje` — timeline do dia, estilo diagrama de rota de ônibus, com tira para espiar a rota de qualquer dia
 5. `CRON` — cronômetro de descanso, barra fixa e pop-up de fim
 6. `renderTreino` — os 4 treinos, registro de carga, progressão, técnica
 7. `renderDieta` — macros e refeições
@@ -53,6 +53,8 @@ Duas exceções deliberadas, ambas comentadas no código:
 O cronômetro conta pelo **instante de término** (`Date.now() + seg*1000`), nunca decrementando um contador: o navegador congela timers em segundo plano, mas o relógio do aparelho não. Ao voltar para o app, o alarme dispara atrasado em vez de sumir.
 
 Carga é indexada pelo **nome do exercício normalizado** — renomear no `PLANO` começa um histórico novo.
+
+A aba Hoje tem uma **tira de sete dias** (`diaVisto`, `null` = hoje) para ver a rota de qualquer dia sem esperar chegar nele. Ao espiar outro dia: o cabeçalho continua falando de hoje (é onde mora o relógio), "Marcar o dia" some, e as marcas de "agora" e "já passou" não são desenhadas — só existem no dia corrente. Sair da aba e voltar retorna para hoje.
 
 ## Plano próprio de cada usuário
 

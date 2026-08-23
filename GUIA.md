@@ -235,7 +235,7 @@ Na aba **Registro**, seção **Meu plano**, botão **Editar meu plano**. Abre um
 | **Escala** | Qual treino em cada dia, a que horas, e o recado que aparece no topo da tela |
 | **Metas do dia** | Calorias, macros, peso de referência e o descanso padrão entre séries |
 | **Treinos** | Nome de cada treino e a lista de exercícios: nome, séries×reps, descanso, nome no Hevy e dica |
-| **Rota de cada dia** | A linha do tempo da aba Hoje — horário, texto, segunda linha e se é aula |
+| **Rota de cada dia** | A linha do tempo da aba Hoje — horário, texto, segunda linha e se é aula. Dá para conferir o resultado sem esperar o dia chegar: na aba Hoje, toque no dia na tira de cima |
 | **Refeições** | Nome, calorias, quando, e os itens (um por linha) |
 | **Sono e transporte** | Horários de dormir e acordar, e os ônibus |
 

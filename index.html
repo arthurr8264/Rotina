@@ -79,6 +79,18 @@ h3.sub{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:
 .stop.now .t{color:var(--signal)}
 .stop.now .lbl{color:#fff}
 
+/* tira de dias da aba Hoje — espiar a rota de qualquer dia */
+.tira{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:10px 0 2px}
+.chip{appearance:none;cursor:pointer;background:var(--panel);border:1px solid var(--edge);border-radius:9px;
+  padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;transition:border-color .16s,background .16s}
+.chip .ab{font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);line-height:1}
+.chip .pt{width:6px;height:6px;border-radius:50%;background:transparent;border:1px solid var(--edge)}
+.chip .pt.treino{background:var(--line2);border-color:var(--line2)}
+.chip.hoje .ab{color:var(--chalk)}
+.chip.on{background:var(--panel-2);border-color:var(--line1)}
+.chip.on .ab{color:var(--line1)}
+.chip:focus-visible{outline:2px solid var(--line1);outline-offset:2px}
+
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0 10px 8px 0;border-bottom:1px solid var(--edge)}
 td{padding:10px 10px 10px 0;border-bottom:1px solid rgba(36,53,67,.55);vertical-align:top}
@@ -846,6 +858,9 @@ const hoje = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
 const somaDias = (d,n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
 const treinaEm = dow => !!PLANO.dias[dow].treino;
 
+/* a semana começando na segunda, como as telas mostram */
+const DIAS_SEMANA = [1,2,3,4,5,6,0];
+
 /* aceita "52,5" e "52.5"; devolve null se estiver fora da faixa ou vazio */
 const numero = (txt, minimo, maximo) => {
   const v = parseFloat(String(txt).replace(",", ".").trim());
@@ -915,20 +930,42 @@ function marcadores(k, compacto){
   </div>`;
 }
 
+/* null = hoje. Espiar outro dia não mexe no cabeçalho nem no relógio:
+   o topo da tela é sempre o agora, e a rota abaixo é o que se olha. */
+let diaVisto = null;
+
+function tiraDeDias(dowHoje, dow){
+  return `<div class="tira">${DIAS_SEMANA.map(d=>{
+    const dia = PLANO.dias[d];
+    const cls = ["chip", d===dow?"on":"", d===dowHoje?"hoje":""].filter(Boolean).join(" ");
+    return `<button class="${cls}" type="button" data-dow="${d}"
+      aria-label="Ver a rota de ${dia.nome}" aria-current="${d===dow?"true":"false"}">
+      <span class="ab">${dia.abbr}</span>
+      <span class="pt ${dia.treino?"treino":""}"></span>
+    </button>`;
+  }).join("")}</div>`;
+}
+
 function renderHoje(){
-  const dow = new Date().getDay();
+  const dowHoje = new Date().getDay();
+  const dow = diaVisto == null ? dowHoje : diaVisto;
+  const ehHoje = dow === dowHoje;
+
   const dia = PLANO.dias[dow];
   const tr = dia.treino ? PLANO.treinos[dia.treino] : null;
-  const now = agora();
   const k = chave(new Date());
 
-  $("#dayName").textContent = dia.nome;
-  $("#daySub").innerHTML = tr
-    ? `<span class="badge">${tr.nome} · ${dia.hora}</span> &nbsp;·&nbsp; ${dia.nota}`
-    : `<span class="badge rest">Descanso</span> &nbsp;·&nbsp; ${dia.nota}`;
+  /* o cabeçalho fala do dia de hoje mesmo quando se espia outro */
+  const hoje = PLANO.dias[dowHoje];
+  const trHoje = hoje.treino ? PLANO.treinos[hoje.treino] : null;
+  $("#dayName").textContent = hoje.nome;
+  $("#daySub").innerHTML = trHoje
+    ? `<span class="badge">${trHoje.nome} · ${hoje.hora}</span> &nbsp;·&nbsp; ${hoje.nota}`
+    : `<span class="badge rest">Descanso</span> &nbsp;·&nbsp; ${hoje.nota}`;
 
+  /* "agora" e "já passou" só existem no dia de hoje */
   let idxNow = -1;
-  dia.rota.forEach((p,i)=>{ if (min(p.t) <= now) idxNow = i; });
+  if (ehHoje){ const now = agora(); dia.rota.forEach((p,i)=>{ if (min(p.t) <= now) idxNow = i; }); }
 
   const stops = dia.rota.map((p,i)=>{
     const cls = ["stop", p.g?"gym":(p.k?"key":""), i===idxNow?"now":(i<idxNow?"done":"")].filter(Boolean).join(" ");
@@ -937,12 +974,23 @@ function renderHoje(){
   }).join("");
 
   $("#v-hoje").innerHTML = `
-    <h2 class="sec">Marcar o dia</h2>${marcadores(k, true)}
-    <h2 class="sec">Rota de hoje</h2><div class="route">${stops}</div>
-    ${tr?`<div class="note"><strong>${tr.nome}</strong> — ${tr.nota}, ${tr.dur}. Os exercícios estão na aba Treino.</div>`:""}
+    ${tiraDeDias(dowHoje, dow)}
+    ${ehHoje ? `<h2 class="sec">Marcar o dia</h2>${marcadores(k, true)}` : ""}
+    <h2 class="sec">${ehHoje ? "Rota de hoje" : `Rota de ${dia.nome.toLowerCase()}`}</h2>
+    <div class="route">${stops}</div>
+    ${tr?`<div class="note"><strong>${tr.nome}</strong> — ${tr.nota}, ${tr.dur}.
+      ${ehHoje ? "Os exercícios estão na aba Treino." : `Começa às ${dia.hora}.`}</div>`:""}
+    ${ehHoje ? "" : `<div class="note quiet">Prévia de ${dia.nome.toLowerCase()}${tr?"":" — dia de descanso"}. Toque em <b>${hoje.abbr}</b> para voltar para hoje.</div>`}
     <div class="foot">Horários de ônibus são estimativas do Guia de Mobilidade UABJ e variam com o trânsito.</div>`;
 
-  ligarMarcadores("#v-hoje");
+  if (ehHoje) ligarMarcadores("#v-hoje");
+  document.querySelectorAll("#v-hoje .chip").forEach(b=>
+    b.addEventListener("click", ()=>{
+      const d = Number(b.dataset.dow);
+      diaVisto = d === dowHoje ? null : d;
+      renderHoje();
+      window.scrollTo({ top:0 });
+    }));
 }
 
 /* =========================================================
@@ -1598,8 +1646,6 @@ function renderMais(){
    e dieta, igual para todo mundo, e só muda colando um plano. */
 const CHAVES_EDITAVEIS = ["meta","descansoSeg","treinos","dias","refeicoes","sono","onibus"];
 
-const DIAS_SEMANA = [1,2,3,4,5,6,0];
-
 let rascunho = null;
 
 const escapa = s => String(s == null ? "" : s)
@@ -2096,6 +2142,9 @@ const TELAS = [
 ];
 
 function ir(id){
+  /* voltar para a aba Hoje volta para hoje: a tela é o agora, e um
+     dia espiado não deve ficar preso ali depois que se sai dela. */
+  if (id === "hoje" && diaVisto !== null){ diaVisto = null; renderHoje(); }
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id===`v-${id}`));
   document.querySelectorAll("#nav button").forEach(b=>{
     const on = b.dataset.id===id;
