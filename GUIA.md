@@ -160,8 +160,20 @@ Três coisas, todas só no celular, nada em servidor:
 | O quê | Onde se registra | Onde se vê |
 |---|---|---|
 | Marcação de treino e dieta | Aba Hoje ou Registro | Calendário e estatísticas |
+| Qual treino foi feito no dia | Seletor que aparece ao marcar "Treinei" | Aba Treino e estatísticas |
 | Carga de cada exercício | Campo `kg × reps` na aba Treino | Linha "última vez" e gráfico no Registro |
 | Peso corporal | Campo na aba Registro | Gráfico e ritmo semanal |
+
+### Treinar num dia que não estava previsto
+
+A escala diz o que era para ser, não o que foi. Se um imprevisto derrubar o treino de segunda e você encaixá-lo na quarta, marque **Treinei** na quarta normalmente — o botão funciona em qualquer dia, inclusive nos de descanso.
+
+Ao marcar, aparece o seletor **Qual treino foi feito**, já com o treino da escala escolhido. Troque para o que você realmente fez. Se for diferente do previsto, o app diz qual era o do dia, sem cobrar nada.
+
+Duas coisas mudam junto:
+
+- O treino conta nas estatísticas **no dia em que foi feito**. Remanejar deixa de aparecer como falta.
+- A aba Treino abre o treino que você registrou, não o da escala — os exercícios que você vai fazer ficam à mão.
 
 ### Como funciona o registro de carga
 

@@ -22,7 +22,7 @@ Build command vazio, publish directory `.`.
 
 1. **Não introduzir build step, bundler, npm ou framework.** O valor do projeto é editar um arquivo e dar push. Se uma sugestão exige `npm install`, ela está errada para este projeto.
 2. **Todo conteúdo vive no objeto `PLANO_PADRAO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo modelo, porque é ali que o dono edita. As telas leem `PLANO`, que é `PLANO_PADRAO` com o plano do usuário (se houver) por cima.
-3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v11"` → `"rotina-v12"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
+3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v12"` → `"rotina-v13"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
 4. **Nada de armazenamento remoto.** Marcações, cargas por exercício e peso corporal ficam em `localStorage`, protegidos por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
 5. **Mobile-first.** Viewport de ~390px é o alvo. Testar mentalmente nessa largura antes de sugerir layout.
 
@@ -55,6 +55,18 @@ O cronômetro conta pelo **instante de término** (`Date.now() + seg*1000`), nun
 Carga é indexada pelo **nome do exercício normalizado** — renomear no `PLANO` começa um histórico novo.
 
 A aba Hoje tem uma **tira de sete dias** (`diaVisto`, `null` = hoje) para ver a rota de qualquer dia sem esperar chegar nele. Ao espiar outro dia: o cabeçalho continua falando de hoje (é onde mora o relógio), "Marcar o dia" some, e as marcas de "agora" e "já passou" não são desenhadas — só existem no dia corrente. Sair da aba e voltar retorna para hoje.
+
+## Treino fora da escala
+
+A escala é sugestão, não obrigação: imprevisto muda o dia, não o treino. Dá para marcar "Treinei" em **qualquer** dia e escolher qual dos treinos foi feito — inclusive um diferente do previsto.
+
+No `LOG`, `t` continua sendo o booleano "treinou?" e a chave nova `tr` guarda o id do treino. A separação é de propósito: registro antigo, sem `tr`, segue valendo como treino feito, e `treinoDoDia()` cai no treino da escala quando `tr` falta ou aponta para um treino que o editor já apagou.
+
+Consequências espalhadas pelo app, todas comentadas no código:
+
+- **`estatisticas()` conta treino no dia em que foi feito**, previsto ou não; `trPrevistos` continua contando os dias de escala. Sem isso, remanejar um treino aparecia como falta. A porcentagem pode passar de 100% em semana com treino extra — é informação verdadeira, não um bug.
+- **A aba Treino abre o treino registrado no dia**, não o da escala: quem encaixou Upper B numa quarta quer os exercícios do Upper B.
+- **Marcar dieta não re-renderiza a aba Treino** — só o treino mexe nela, e um render à toa fecharia os `<details>` abertos.
 
 ## Plano próprio de cada usuário
 

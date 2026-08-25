@@ -91,6 +91,10 @@ h3.sub{font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:
 .chip.on .ab{color:var(--line1)}
 .chip:focus-visible{outline:2px solid var(--line1);outline-offset:2px}
 
+/* escolher qual treino foi feito no dia */
+.qual{margin:10px 0 2px}
+.qual .dica{margin:7px 0 0}
+
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0 10px 8px 0;border-bottom:1px solid var(--edge)}
 td{padding:10px 10px 10px 0;border-bottom:1px solid rgba(36,53,67,.55);vertical-align:top}
@@ -641,7 +645,19 @@ const LOG = (() => {
     alterna(k, campo){
       const at = dados[k] || { t:false, d:false };
       at[campo] = !at[campo];
+      /* desmarcar o treino esquece qual foi */
+      if (campo === "t" && !at.t) delete at.tr;
       if (!at.t && !at.d) delete dados[k]; else dados[k] = at;
+      salvar();
+    },
+    /* Qual treino foi feito no dia — pode ser um que não estava na
+       escala daquele dia. `t` continua booleano de propósito: registro
+       antigo, sem `tr`, segue valendo como "treinou". */
+    defineTreino(k, id){
+      const at = dados[k] || { t:false, d:false };
+      at.t = true;
+      if (id) at.tr = id; else delete at.tr;
+      dados[k] = at;
       salvar();
     },
     apagarTudo(){ dados = {}; salvar(); try{ localStorage.removeItem(KEY); }catch(e){} }
@@ -915,19 +931,46 @@ let selecionado = chave(new Date());
    4. TELA: HOJE
    ========================================================= */
 
-function marcadores(k, compacto){
+/* O treino registrado no dia: o que foi escolhido à mão, senão o da
+   escala. Um id pode apontar para treino que já foi renomeado ou
+   apagado no editor, por isso a conferência antes de usar. */
+function treinoDoDia(k){
   const est = LOG.dia(k);
   const dow = new Date(k + "T12:00:00").getDay();
-  const temTreino = treinaEm(dow);
-  const nomeTr = temTreino ? PLANO.treinos[PLANO.dias[dow].treino].nome : "dia de descanso";
+  const escolhido = est.tr && PLANO.treinos[est.tr] ? est.tr : null;
+  const previsto = PLANO.dias[dow].treino && PLANO.treinos[PLANO.dias[dow].treino] ? PLANO.dias[dow].treino : null;
+  return { escolhido, previsto, feito: escolhido || (est.t ? previsto : null) };
+}
+
+function marcadores(k, compacto){
+  const est = LOG.dia(k);
+  const { previsto, feito } = treinoDoDia(k);
+
+  /* Treinar fora da escala é permitido: imprevisto muda o dia, não o
+     treino. Por isso o botão nunca fica desabilitado. */
+  const legenda = feito ? PLANO.treinos[feito].nome
+                : previsto ? PLANO.treinos[previsto].nome
+                : "treino extra";
+
+  const opcoes = Object.entries(PLANO.treinos).map(([id,t])=>
+    `<option value="${id}" ${id===feito?"selected":""}>${t.nome}</option>`).join("");
+
   return `<div class="marks">
-    <button class="mark t ${est.t?"on":""}" data-k="${k}" data-c="t" type="button" ${temTreino?"":"disabled"}>
-      <span class="box"></span><span class="cap">Treinei<small>${nomeTr}</small></span>
+    <button class="mark t ${est.t?"on":""}" data-k="${k}" data-c="t" type="button">
+      <span class="box"></span><span class="cap">Treinei<small>${legenda}</small></span>
     </button>
     <button class="mark d ${est.d?"on":""}" data-k="${k}" data-c="d" type="button">
-      <span class="box"></span><span class="cap">Dieta<small>${compacto?"segui o plano":"bati as 2600 kcal"}</small></span>
+      <span class="box"></span><span class="cap">Dieta<small>${compacto?"segui o plano":`bati as ${PLANO.meta.kcal} kcal`}</small></span>
     </button>
-  </div>`;
+  </div>
+  ${est.t ? `<div class="qual">
+    <div class="rot">Qual treino foi feito</div>
+    <select class="pick" data-k="${k}" aria-label="Treino feito neste dia">
+      ${feito ? "" : `<option value="" selected>Escolha o treino</option>`}
+      ${opcoes}
+    </select>
+    ${feito && feito !== previsto ? `<p class="dica">${previsto ? `A escala pedia ${PLANO.treinos[previsto].nome} neste dia.` : "Este dia era de descanso na escala."}</p>` : ""}
+  </div>` : ""}`;
 }
 
 /* null = hoje. Espiar outro dia não mexe no cabeçalho nem no relógio:
@@ -1088,8 +1131,10 @@ function sparkCarga(nome){
 }
 
 function renderTreino(){
-  const dow = new Date().getDay();
-  const hojeId = PLANO.dias[dow].treino;
+  /* se o dia foi marcado com outro treino, é esse que abre — quem
+     encaixou Upper B numa quarta quer os exercícios do Upper B. */
+  const doDia = treinoDoDia(chave(new Date()));
+  const hojeId = doDia.feito || doDia.previsto;
 
   const blocos = Object.entries(PLANO.treinos).map(([id,t],i)=>{
     const ehHoje = id === hojeId;
@@ -1249,7 +1294,10 @@ function estatisticas(janela){
   for (let i=0;i<janela;i++){
     const d = somaDias(h,-i), est = LOG.dia(chave(d));
     dtDias++; if (est.d) dtFeitos++;
-    if (treinaEm(d.getDay())){ trPrevistos++; if (est.t) trFeitos++; }
+    /* treino conta no dia em que foi feito, previsto ou não — senão
+       remanejar um treino apareceria como falta. */
+    if (est.t) trFeitos++;
+    if (treinaEm(d.getDay())) trPrevistos++;
   }
   let seq = 0, inicio = LOG.dia(chave(h)).d ? 0 : 1;
   for (let i=inicio;i<400;i++){ if (LOG.dia(chave(somaDias(h,-i))).d) seq++; else break; }
@@ -1585,6 +1633,15 @@ function ligarMarcadores(escopo){
     b.addEventListener("click", ()=>{
       LOG.alterna(b.dataset.k, b.dataset.c);
       renderHoje(); renderRegistro();
+      /* só o treino mexe na aba Treino; marcar dieta não tem por que
+         fechar os <details> abertos lá. */
+      if (b.dataset.c === "t") renderTreino();
+    }));
+
+  document.querySelectorAll(`${escopo} .qual select`).forEach(s=>
+    s.addEventListener("change", ()=>{
+      LOG.defineTreino(s.dataset.k, s.value);
+      renderHoje(); renderRegistro(); renderTreino();
     }));
 }
 
