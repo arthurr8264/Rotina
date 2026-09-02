@@ -478,6 +478,7 @@ const PLANO_PADRAO = {
   /* ---------- DIAS ---------- */
   dias:{
     1:{ nome:"Segunda", abbr:"Seg", treino:"lowerA", hora:"10:45", nota:"Janela até 12h, quando a academia fecha",
+        avisoRefeicao:"Hoje o pós-treino se funde com o almoço. Some as duas porções — não é uma refeição maior, são duas juntas.",
         rota:[
           {t:"07:50",l:"Chegada · mototáxi"},
           {t:"08:00",l:"Matemática Discreta 2",s:"Sala 01C",k:1},
@@ -492,6 +493,7 @@ const PLANO_PADRAO = {
           {t:"20:30",l:"Jantar"},{t:"22:30",l:"Dormir"}
         ]},
     2:{ nome:"Terça", abbr:"Ter", treino:"upperA", hora:"19:15", nota:"Noite livre após a aula",
+        avisoRefeicao:"Hoje o pós-treino se funde com o jantar. Some as duas porções — não é uma refeição maior, são duas juntas.",
         rota:[
           {t:"06:30",l:"Café da manhã"},{t:"07:50",l:"Chegada · mototáxi"},
           {t:"08:00",l:"Física Geral 2",s:"Sala 05C",k:1},
@@ -526,6 +528,7 @@ const PLANO_PADRAO = {
           {t:"20:30",l:"Jantar"},{t:"22:00",l:"Dormir"}
         ]},
     5:{ nome:"Sexta", abbr:"Sex", treino:"lowerB", hora:"06:00", nota:"Treino cedo · EAD à tarde",
+        avisoRefeicao:"Hoje o pós-treino se funde com o café da manhã. Some as duas porções — não é uma refeição maior, são duas juntas.",
         rota:[
           {t:"05:30",l:"Acordar"},{t:"05:35",l:"1 banana"},
           {t:"06:00",l:"Lower B",s:"~60 min",g:1},
@@ -1008,6 +1011,10 @@ function renderHoje(){
     ? `<span class="badge">${trHoje.nome} · ${hoje.hora}</span> &nbsp;·&nbsp; ${hoje.nota}`
     : `<span class="badge rest">Descanso</span> &nbsp;·&nbsp; ${hoje.nota}`;
 
+  /* O aviso de refeição fundida só aparece no dia corrente: o texto
+     vem escrito em primeira pessoa do presente ("Hoje o pós-treino
+     ..."), e mostrá-lo ao espiar outro dia estaria mentindo. */
+
   /* "agora" e "já passou" só existem no dia de hoje */
   let idxNow = -1;
   if (ehHoje){ const now = agora(); dia.rota.forEach((p,i)=>{ if (min(p.t) <= now) idxNow = i; }); }
@@ -1023,6 +1030,7 @@ function renderHoje(){
     ${ehHoje ? `<h2 class="sec">Marcar o dia</h2>${marcadores(k, true)}` : ""}
     <h2 class="sec">${ehHoje ? "Rota de hoje" : `Rota de ${dia.nome.toLowerCase()}`}</h2>
     <div class="route">${stops}</div>
+    ${ehHoje && dia.avisoRefeicao ? `<div class="note alert">${dia.avisoRefeicao}</div>` : ""}
     ${tr?`<div class="note"><strong>${tr.nome}</strong> — ${tr.nota}, ${tr.dur}.
       ${ehHoje ? "Os exercícios estão na aba Treino." : `Começa às ${dia.hora}.`}</div>`:""}
     ${ehHoje ? "" : `<div class="note quiet">Prévia de ${dia.nome.toLowerCase()}${tr?"":" — dia de descanso"}. Toque em <b>${hoje.abbr}</b> para voltar para hoje.</div>`}
