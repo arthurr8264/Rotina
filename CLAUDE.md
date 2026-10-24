@@ -22,7 +22,7 @@ Build command vazio, publish directory `.`.
 
 1. **Não introduzir build step, bundler, npm ou framework.** O valor do projeto é editar um arquivo e dar push. Se uma sugestão exige `npm install`, ela está errada para este projeto.
 2. **Todo conteúdo vive no objeto `PLANO_PADRAO`**, no início da tag `<script>`. Nunca escreva textos de conteúdo direto no HTML — sempre passe pelo modelo, porque é ali que o dono edita. As telas leem `PLANO`, que é `PLANO_PADRAO` com o plano do usuário (se houver) por cima.
-3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v15"` → `"rotina-v16"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
+3. **Ao alterar `index.html`, `sw.js` ou qualquer asset, suba a versão do cache** em `sw.js`: `const CACHE = "rotina-v16"` → `"rotina-v17"`. Sem isso o navegador serve a versão antiga e a mudança parece não ter funcionado.
 4. **Nada de armazenamento remoto.** Marcações, cargas por exercício e peso corporal ficam em `localStorage`, protegidos por `try/catch` com degradação silenciosa. Não adicionar backend, conta ou sincronização.
 5. **Mobile-first.** Viewport de ~390px é o alvo. Testar mentalmente nessa largura antes de sugerir layout.
 
@@ -122,12 +122,14 @@ Manter essa direção ao adicionar telas. Não introduzir gradientes, sombras co
 Estudante de Engenharia de Computação na UFRPE (Unidade Acadêmica de Belo Jardim), 2º período.
 Mora em outra cidade e depende do ônibus universitário para voltar — por isso os horários de treino são tão específicos e frágeis. Ida de mototáxi (~10 min, horário livre); volta só de ônibus.
 
-A academia abre 5h-12h e 14h-21h30, fechada entre 12h e 14h — é essa janela morta que define os horários de treino.
+A academia abre das 5h às 22h, sem fechar no almoço. Os treinos ficam sempre antes das 18h, para evitar o pico de movimento.
 
-A escala atual: Lower A (seg 10h45), Upper A (ter 19h15), Upper B (qui 14h), Lower B (sex 6h).
-Quarta, sábado e domingo são descanso.
+A escala atual: Lower A (seg 10h45), Upper A (ter 11h), Lower B (qua 16h30), Upper B (qui 14h).
+Sexta, sábado e domingo são descanso.
 
-O ônibus das 10h15 (chega em casa ~10h40) é o que viabiliza o treino da segunda, nos dias em que a aula termina às 10h.
+O ônibus das 10h15 (chega em casa ~10h40) é o que viabiliza os treinos de segunda e terça, nos dias em que a aula termina às 10h. Na quarta não há rota no horário livre, e o Uber das 16h cobre essa lacuna.
+
+Apetite baixo é a restrição central da dieta: 5 refeições em vez de 6, nenhuma fundida com outra, e ~1035 das 2630 kcal são líquidas (vitamina do café + shaker do campus) justamente para não dependerem de ter fome.
 
 Objetivo: hipertrofia com superávit calórico (~2600 kcal). Acompanhamento com nutricionista à parte.
 
